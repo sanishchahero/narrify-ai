@@ -1,3 +1,6 @@
+import json
+from typing import Any
+
 from pathlib import Path
 
 from ollama import Client
@@ -12,9 +15,16 @@ class LLMService:
         self.client = Client(host=settings.ollama_host)
         self.model = settings.llm_model
 
-    def generate(self, prompt: str) -> str:
+    from typing import Any
+
+    def generate(
+            self,
+            prompt: str,
+            format: Any | None = None,
+    ) -> str:
         response = self.client.chat(
             model=self.model,
+            format=format,
             messages=[
                 {
                     "role": "user",

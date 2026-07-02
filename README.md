@@ -28,6 +28,7 @@ uv add --dev mypy
 uv run python main.py books/atomic_habits.pdf
 python main.py load books/atomic_habits.pdf
 python main.py summarize books/atomic_habits.pdf
+python main.py blueprint books/atomic_habits.pdf
 
 uv run pytest
 ````

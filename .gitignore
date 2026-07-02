@@ -9,3 +9,20 @@ __pycache__/
 .env
 
 app/generated/
+
+# IntelliJ IDEA / JetBrains
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.python-version
