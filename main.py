@@ -1,13 +1,34 @@
-from app.core.config import get_settings
-from app.core.logger import logger
+from pathlib import Path
+
+import typer
+
+from app.loaders.pdf_loader import PdfBookLoader
+from app.agents.summary_agent import SummaryAgent
+
+app = typer.Typer()
 
 
-def main():
-    settings = get_settings()
+@app.command()
+def load(pdf: Path):
+    loader = PdfBookLoader()
 
-    logger.info(f"Starting {settings.app_name}")
-    logger.info(f"Using model: {settings.llm_model}")
+    book = loader.load(str(pdf))
 
+    print(f"Title: {book.title}")
+    print(f"Author: {book.author}")
+    print(f"Pages: {book.pages}")
+    print(f"Words: {book.word_count}")
+
+@app.command()
+def summarize(pdf: Path):
+
+    loader = PdfBookLoader()
+
+    book = loader.load(str(pdf))
+
+    summary = SummaryAgent().summarize(book)
+
+    print(summary)
 
 if __name__ == "__main__":
-    main()
+    app()
