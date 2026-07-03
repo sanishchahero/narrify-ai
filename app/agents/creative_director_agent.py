@@ -3,9 +3,13 @@ import json
 from pydantic import ValidationError
 
 from app.domain.models.book import Book
-from app.domain.models.video_blueprint import Scene, VideoBlueprint
 from app.domain.models.video_blueprint_response import VideoBlueprintResponse
 from app.services.llm import LLMService
+from app.domain.models.video_blueprint import (
+    Scene,
+    VideoBlueprint,
+    VisualContext,
+)
 
 
 class CreativeDirectorAgent:
@@ -51,6 +55,15 @@ class CreativeDirectorAgent:
             blueprint: VideoBlueprintResponse,
     ) -> VideoBlueprint:
 
+        context = VisualContext(
+            art_style=blueprint.visual_context.art_style,
+            color_palette=blueprint.visual_context.color_palette,
+            aspect_ratio=blueprint.visual_context.aspect_ratio,
+            illustration_style=blueprint.visual_context.illustration_style,
+            narrator_style=blueprint.visual_context.narrator_style,
+            recurring_characters=blueprint.visual_context.recurring_characters,
+        )
+
         scenes = []
 
         for scene in blueprint.scenes:
@@ -59,13 +72,18 @@ class CreativeDirectorAgent:
                     id=scene.id,
                     title=scene.title,
                     narration=scene.narration,
-                    visual_prompt=scene.visual_prompt,
-                    duration=0.0,  # calculated later
-                    camera=scene.camera_motion,
+                    subject=scene.subject,
+                    action=scene.action,
+                    background=scene.background,
+                    foreground=scene.foreground,
+                    composition=scene.composition,
+                    perspective=scene.perspective,
+                    lighting=scene.lighting,
+                    camera_motion=scene.camera_motion,
                     transition=scene.transition,
-                    subtitle_style=scene.subtitle_style,
                     emotion=scene.emotion,
                     music_mood=scene.music_mood,
+                    subtitle_style=scene.subtitle_style,
                     sound_effects=scene.sound_effects,
                 )
             )
@@ -75,6 +93,6 @@ class CreativeDirectorAgent:
             hook=blueprint.hook,
             ending=blueprint.ending,
             total_duration=0.0,
-            style=blueprint.style,
+            visual_context=context,
             scenes=scenes,
         )

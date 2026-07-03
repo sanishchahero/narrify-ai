@@ -1,13 +1,18 @@
 from pathlib import Path
 
 import typer
+from pathlib import Path
+from typing import Optional
 
 from app.loaders.pdf_loader import PdfBookLoader
 from app.agents.summary_agent import SummaryAgent
 from app.agents.script_agent import ScriptAgent
 from app.agents.creative_director_agent import CreativeDirectorAgent
+from app.agents.storyboard_agent import StoryboardAgent
+
 from app.services.prompt_enhancer import PromptEnhancer
 from app.config.image_styles import ImageStyle
+from app.renderers.image_renderer import ImageRenderer
 
 app = typer.Typer()
 
@@ -69,6 +74,52 @@ def blueprint(pdf: Path):
         print("=" * 80)
         print(prompt)
         print()
+
+
+@app.command()
+def render_images(
+        pdf: Path,
+        limit: Optional[int] = None,
+):
+    loader = PdfBookLoader()
+
+    book = loader.load(str(pdf))
+
+    blueprint = CreativeDirectorAgent().run(book)
+
+    print("=" * 80)
+    print(f"Blueprint contains {len(blueprint.scenes)} scene(s)")
+    print("=" * 80)
+
+    for scene in blueprint.scenes:
+        print(f"Scene {scene.id}: {scene.title}")
+
+    renderer = ImageRenderer()
+
+    renderer.render(
+        blueprint,
+        Path("output"),
+        limit=limit,
+    )
+
+@app.command()
+def run(pdf_path: str):
+    loader = PdfBookLoader()
+
+    book = loader.load(pdf_path)
+
+    storyboard = StoryboardAgent().run(book)
+
+    print("=" * 80)
+    print(f"Storyboard contains {len(storyboard.scenes)} scenes")
+    print("=" * 80)
+
+    renderer = ImageRenderer()
+
+    renderer.render(
+        storyboard,
+        Path("output"),
+    )
 
 
 if __name__ == "__main__":
