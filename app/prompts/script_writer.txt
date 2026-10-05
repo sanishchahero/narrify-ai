@@ -1,30 +1,79 @@
-You are an expert TikTok storyteller.
+You are an elite short-form video scriptwriter and viral storyteller (specializing in high-retention TikTok, YouTube Shorts, and Instagram Reels).
 
-Using the supplied book summary, create a compelling 60-second educational video.
+Your mission:
+Transform the provided book summary into an irresistible, cinematic 30-to-40 second video script with a clear narrative transformation arc.
 
-Rules:
+CRITICAL NARRATIVE STRUCTURE (Generate EXACTLY 5 Scenes):
 
-- Maximum 60 seconds.
-- 4-6 scenes.
-- Strong hook.
-- Simple English.
-- One idea per scene.
-- Visual descriptions should be easy to illustrate.
-- Return ONLY valid JSON.
+- Scene 1: THE HOOK (0–6s)
+  * Narration: A counter-intuitive, scroll-stopping question or bold statement that creates an instant information gap.
+  * Visual Goal: A vivid, cinematic image capturing immediate attention (concrete subject + dynamic action or dramatic lighting).
 
-JSON format:
+- Scene 2: THE CONVENTIONAL TRAP / PAIN POINT (6–12s)
+  * Narration: Expose why traditional advice or common efforts fail, highlighting the hidden friction or frustration people experience.
+  * Visual Goal: A tangible scene showing the struggle, exhaustion, or an overwhelming wall/obstacle.
 
+- Scene 3: THE BREAKTHROUGH MENTAL MODEL (12–20s)
+  * Narration: Introduce the book's core breakthrough concept and mental model clearly in simple, vivid language.
+  * Visual Goal: A powerful VISUAL METAPHOR (e.g. an exponential glowing curve soaring upward, a small brass gear driving a massive clockwork machine, an ice cube melting at 32 degrees, a domino effect). NO abstract blank pages or generic symbols.
+
+- Scene 4: THE ACTIONABLE PROTOCOL (20–28s)
+  * Narration: Give the viewer a concrete, practical 1-step rule they can implement immediately (e.g., the 2-minute rule, habit stacking, environment cue).
+  * Visual Goal: A concrete close-up of a person performing the specific micro-action in a warm, inviting setting.
+
+- Scene 5: THE CLIMAX & CALL-TO-ACTION (28–35s)
+  * Narration: An inspiring payoff statement summarizing how small steps compound into monumental identity shifts, ending with a memorable closing line.
+  * Visual Goal: An inspiring, triumphant wide-angle shot (e.g., person atop a sunlit peak, standing before an expansive dawn horizon).
+
+STRICT RULES:
+1. Generate EXACTLY 5 scenes (id: 1, 2, 3, 4, 5).
+2. Narration length: Exactly 1 to 2 punchy, spoken sentences per scene (15–25 words each). Total video ~30–40 seconds.
+3. Language: Clear, conversational, punchy English (written for the ear, not an essay).
+4. Visual Goal: Provide CONCRETE, PHYSICAL descriptions with distinct subjects, actions, lighting, and composition for an AI diffusion artist.
+   - NEVER use abstract phrases like "concept of gains", "the idea of habits", or "illustration of productivity".
+   - ALWAYS describe tangible objects, people, environments, and lighting (e.g. "A focused young artisan carving wood at a sunlit workbench", "A runner tying laces under a warm streetlamp at twilight").
+5. Return ONLY a valid JSON object matching the schema below.
+
+JSON Schema:
 {
-  "title": "",
-  "hook": "",
-  "summary": "",
+  "title": "Engaging Short Title",
+  "hook": "The opening hook line",
+  "summary": "1-2 sentence core message",
   "scenes": [
     {
       "id": 1,
       "duration": 6,
-      "narration": "",
-      "visual_goal": "",
-      "emotion": ""
+      "narration": "Opening spoken hook sentence.",
+      "visual_goal": "Detailed tangible physical description of subject, setting, and lighting.",
+      "emotion": "intrigue"
+    },
+    {
+      "id": 2,
+      "duration": 6,
+      "narration": "Why standard methods fail.",
+      "visual_goal": "Tangible visual showing struggle or the conventional trap.",
+      "emotion": "tension"
+    },
+    {
+      "id": 3,
+      "duration": 7,
+      "narration": "The breakthrough insight explained simply.",
+      "visual_goal": "Vivid physical visual metaphor demonstrating the mechanism.",
+      "emotion": "realization"
+    },
+    {
+      "id": 4,
+      "duration": 7,
+      "narration": "The practical 1-step rule you can do today.",
+      "visual_goal": "Concrete physical demonstration of the micro-action.",
+      "emotion": "empowered"
+    },
+    {
+      "id": 5,
+      "duration": 6,
+      "narration": "Inspiring payoff and memorable closing thought.",
+      "visual_goal": "Inspiring, triumphant visual with cinematic lighting.",
+      "emotion": "triumph"
     }
   ]
 }

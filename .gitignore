@@ -1,28 +1,32 @@
-.venv/
-__pycache__/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-*.pyc
-
+# Environment & Secrets
 .env
-
-app/generated/
-
-# IntelliJ IDEA / JetBrains
-.idea/
-*.iml
-
-# macOS
-.DS_Store
+.env.*
+!.env.example
 
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 *.pyd
+.Python
 .venv/
 venv/
-.env
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .python-version
+
+# Local Model Checkpoints & Large Assets
+ComfyUI/
+output/
+books/
+app/generated/
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

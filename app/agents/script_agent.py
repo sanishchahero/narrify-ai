@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from app.domain.models.script import Scene, VideoScript
 from app.domain.models.script_response import ScriptResponse
@@ -9,15 +10,17 @@ class ScriptAgent:
     def __init__(self):
         self.llm = LLMService()
 
-    def generate(self, summary: str) -> VideoScript:
-
+    def generate(self, summary: str, target_scenes: int = 5) -> VideoScript:
         prompt = self.llm.load_prompt("script_writer")
-
-        prompt += f"\n\n{summary}"
+        prompt += f"\n\nTARGET NUMBER OF SCENES: {target_scenes}\n\nBOOK SUMMARY:\n{summary}"
 
         response = self.llm.generate(
             prompt,
             format="json",
+            system_prompt=(
+                f"You are an expert viral short-form video creator. You always return valid JSON "
+                f"with exactly {target_scenes} scenes following the viral narrative arc."
+            ),
         )
 
         data = ScriptResponse.model_validate(

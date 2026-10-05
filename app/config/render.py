@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class RenderConfig:
-    width: int = 576
-    height: int = 1024
+    width: int = 512
+    height: int = 896
 
-    steps: int = 8
-    cfg: float = 5.0
+    steps: int = 20
+    cfg: float = 7.0
 
     sampler: str = "dpmpp_2m"
     scheduler: str = "karras"

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from app.domain.models.character import Character
 from app.domain.models.scene import Scene
 from app.domain.models.visual_context import VisualContext
 

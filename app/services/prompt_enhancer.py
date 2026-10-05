@@ -1,248 +1,159 @@
+from typing import Any, Optional
+
 from app.config.image_styles import ImageStyle, STYLE_PROMPTS
-from app.domain.models.scene import Scene
-from app.domain.models.visual_context import VisualContext
 
 
 class PromptEnhancer:
+    """
+    Synthesizes dense, high-quality diffusion prompts optimized for CLIP text encoders.
+    Produces prioritized comma-separated visual descriptions without markdown boilerplate
+    or negative words in the positive prompt.
+    """
 
     @staticmethod
     def enhance(
-        scene: Scene,
-        context: VisualContext,
+        scene: Any,
+        context: Optional[Any] = None,
         style: ImageStyle = ImageStyle.HANDWRITTEN,
     ) -> str:
-
-        base_style = STYLE_PROMPTS[style]
-
-        characters = "\n".join(
-            [
-                f"""
-Name: {c.name}
-Gender: {c.gender}
-Age: {c.age}
-Hairstyle: {c.hairstyle}
-Face: {c.face}
-Clothing: {c.clothing}
-Accessories: {", ".join(c.accessories) if c.accessories else "None"}
-""".strip()
-                for c in scene.characters
-            ]
-        )
-
-        if not characters:
-            characters = "No visible characters."
-
-        objects = (
-            ", ".join(scene.frame.important_objects)
-            if scene.frame.important_objects
-            else "None"
-        )
-
-        foreground = (
-            ", ".join(scene.frame.foreground)
-            if scene.frame.foreground
-            else "None"
-        )
-
-        middle = (
-            ", ".join(scene.frame.middle_ground)
-            if scene.frame.middle_ground
-            else "None"
-        )
-
-        background = (
-            ", ".join(scene.frame.background)
-            if scene.frame.background
-            else "None"
-        )
-
-        secondary = (
-            ", ".join(scene.frame.secondary_subjects)
-            if scene.frame.secondary_subjects
-            else "None"
-        )
-
-        metaphor = (
-            scene.frame.visual_metaphor
-            if scene.frame.visual_metaphor
-            else "None"
-        )
-
-        return f"""
-{base_style}
-
-========================
-SCENE
-========================
-
-Title:
-{scene.title}
-
-Narration:
-{scene.narration}
-
-Emotion:
-{scene.emotion}
-
-========================
-PRIMARY SUBJECT
-========================
-
-{scene.frame.primary_subject}
-
-Description:
-
-{scene.frame.subject_description}
-
-Primary Action:
-
-{scene.frame.primary_action}
-
-Secondary Subjects:
-
-{secondary}
-
-========================
-CHARACTERS
-========================
-
-{characters}
-
-========================
-OBJECTS
-========================
-
-{objects}
-
-Foreground:
-
-{foreground}
-
-Middle Ground:
-
-{middle}
-
-Background Elements:
-
-{background}
-
-========================
-ENVIRONMENT
-========================
-
-Location:
-
-{scene.environment.location}
-
-Weather:
-
-{scene.environment.weather}
-
-Season:
-
-{scene.environment.season}
-
-Time:
-
-{scene.environment.time_of_day}
-
-========================
-CAMERA
-========================
-
-Shot:
-
-{scene.camera.shot}
-
-Angle:
-
-{scene.camera.angle}
-
-Lens:
-
-{scene.camera.lens}
-
-Focus:
-
-{scene.camera.focus}
-
-Composition:
-
-{scene.camera.composition}
-
-========================
-VISUAL STYLE
-========================
-
-Art Style:
-
-{context.art_style}
-
-Illustration Style:
-
-{context.illustration_style}
-
-Paper:
-
-{context.paper_style}
-
-Line Style:
-
-{context.line_style}
-
-Lighting:
-
-{context.lighting_style}
-
-Color Palette:
-
-{context.color_palette}
-
-Aspect Ratio:
-
-{context.aspect_ratio}
-
-========================
-VISUAL METAPHOR
-========================
-
-{metaphor}
-
-========================
-IMPORTANT
-========================
-
-Create ONE educational illustration.
-
-Everything must be clearly visible.
-
-Use the listed objects.
-
-Keep the same character appearance.
-
-Hand-drawn educational notebook style.
-
-Simple ink drawing.
-
-Soft watercolor.
-
-Vintage paper texture.
-
-High detail.
-
-No anime.
-
-No manga.
-
-No fantasy.
-
-No random people.
-
-No watermark.
-
-No logo.
-
-No text.
-
-No speech bubbles.
-""".strip()
+        prompt_parts: list[str] = []
+
+        # 1. Base style keywords
+        base_style = STYLE_PROMPTS.get(style, STYLE_PROMPTS[ImageStyle.HANDWRITTEN])
+
+        # 2. Extract direct visual_prompt or visual_goal if present
+        visual_prompt = getattr(scene, "visual_prompt", None)
+        if visual_prompt:
+            prompt_parts.append(str(visual_prompt))
+
+        visual_goal = getattr(scene, "visual_goal", None)
+        if visual_goal:
+            prompt_parts.append(str(visual_goal))
+
+        # 3. Extract from frame (Storyboard Scene)
+        frame = getattr(scene, "frame", None)
+        if frame:
+            if getattr(frame, "primary_subject", None):
+                subject_desc = getattr(frame, "subject_description", "")
+                if subject_desc:
+                    prompt_parts.append(f"{frame.primary_subject}, {subject_desc}")
+                else:
+                    prompt_parts.append(frame.primary_subject)
+
+            if getattr(frame, "primary_action", None):
+                prompt_parts.append(frame.primary_action)
+
+            objects = getattr(frame, "important_objects", [])
+            if objects:
+                prompt_parts.append(f"featuring {', '.join(objects)}")
+
+            fg = getattr(frame, "foreground", [])
+            if fg:
+                prompt_parts.append(f"foreground with {', '.join(fg)}")
+
+            bg = getattr(frame, "background", [])
+            if bg:
+                prompt_parts.append(f"background with {', '.join(bg)}")
+
+            metaphor = getattr(frame, "visual_metaphor", None)
+            if metaphor and metaphor.lower() != "none":
+                prompt_parts.append(f"visual metaphor of {metaphor}")
+
+        # 4. Extract from blueprint Scene (subject, action, foreground, background)
+        if hasattr(scene, "subject") and scene.subject:
+            prompt_parts.append(str(scene.subject))
+        if hasattr(scene, "action") and scene.action:
+            prompt_parts.append(str(scene.action))
+        if hasattr(scene, "foreground") and scene.foreground:
+            prompt_parts.append(f"foreground with {scene.foreground}")
+        if hasattr(scene, "background") and scene.background:
+            prompt_parts.append(f"background with {scene.background}")
+
+        # 5. Extract Characters
+        characters = getattr(scene, "characters", [])
+        if characters:
+            char_descs = []
+            for c in characters:
+                if isinstance(c, str):
+                    char_descs.append(c)
+                else:
+                    parts = []
+                    gender = getattr(c, "gender", "")
+                    age = getattr(c, "age", "")
+                    if age or gender:
+                        parts.append(f"{age} {gender}".strip())
+                    if getattr(c, "hairstyle", None):
+                        parts.append(str(c.hairstyle))
+                    if getattr(c, "clothing", None):
+                        parts.append(f"wearing {c.clothing}")
+                    if parts:
+                        char_descs.append(", ".join(parts))
+            if char_descs:
+                prompt_parts.append("; ".join(char_descs))
+
+        # 6. Environment & Setting
+        env = getattr(scene, "environment", None)
+        if env:
+            env_parts = []
+            if getattr(env, "location", None):
+                env_parts.append(str(env.location))
+            if getattr(env, "time_of_day", None):
+                env_parts.append(str(env.time_of_day))
+            if getattr(env, "weather", None):
+                env_parts.append(str(env.weather))
+            if env_parts:
+                prompt_parts.append(", ".join(env_parts))
+
+        # 7. Camera & Composition
+        cam = getattr(scene, "camera", None)
+        if cam:
+            if isinstance(cam, str):
+                prompt_parts.append(f"{cam} camera angle")
+            else:
+                cam_parts = []
+                if getattr(cam, "shot", None):
+                    cam_parts.append(f"{cam.shot} shot")
+                if getattr(cam, "angle", None):
+                    cam_parts.append(f"{cam.angle} angle")
+                if getattr(cam, "composition", None):
+                    cam_parts.append(str(cam.composition))
+                if cam_parts:
+                    prompt_parts.append(", ".join(cam_parts))
+        elif hasattr(scene, "composition") and scene.composition:
+            prompt_parts.append(str(scene.composition))
+
+        # 8. Lighting & Emotion
+        if hasattr(scene, "lighting") and scene.lighting:
+            prompt_parts.append(f"{scene.lighting} lighting")
+
+        emotion = getattr(scene, "emotion", "")
+        if emotion:
+            prompt_parts.append(f"{emotion} mood")
+
+        # 9. Visual Context / Global Style Rules
+        if context:
+            ctx_parts = []
+            if getattr(context, "art_style", None):
+                ctx_parts.append(str(context.art_style))
+            if getattr(context, "illustration_style", None):
+                ctx_parts.append(str(context.illustration_style))
+            if getattr(context, "color_palette", None):
+                ctx_parts.append(f"{context.color_palette} color palette")
+            if getattr(context, "lighting_style", None):
+                ctx_parts.append(f"{context.lighting_style} lighting")
+            if getattr(context, "line_style", None):
+                ctx_parts.append(f"{context.line_style} linework")
+            if ctx_parts:
+                prompt_parts.append(", ".join(ctx_parts))
+
+        # 10. Append Base Style tokens
+        prompt_parts.append(base_style)
+
+        # Clean and join into single line comma-separated prompt
+        cleaned_parts = [
+            p.strip().rstrip(",")
+            for p in prompt_parts
+            if p and p.strip() and p.strip().lower() != "none"
+        ]
+
+        return ", ".join(cleaned_parts)

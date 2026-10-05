@@ -24,28 +24,30 @@ class Scene:
     narration: str
 
     # ---------- Visual Content ----------
-    subject: str
-    action: str
-    background: str
-    foreground: str
+    subject: str = ""
+    action: str = ""
+    background: str = ""
+    foreground: str = ""
 
     # ---------- Composition ----------
-    composition: str
-    perspective: str
-    lighting: str
+    composition: str = ""
+    perspective: str = ""
+    lighting: str = ""
 
     # ---------- Rendering ----------
-    camera_motion: str
-    transition: str
+    camera_motion: str = ""
+    transition: str = ""
 
     # ---------- Emotion ----------
-    emotion: str
-    music_mood: str
-    subtitle_style: str
+    emotion: str = ""
+    music_mood: str = ""
+    subtitle_style: str = ""
 
     sound_effects: list[str] = field(default_factory=list)
 
     duration: float = 0.0
+    visual_prompt: str = ""
+    camera: str = ""
 
 
 @dataclass(slots=True)

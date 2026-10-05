@@ -3,11 +3,6 @@ from dataclasses import dataclass, field
 from app.domain.models.camera import Camera
 from app.domain.models.character import Character
 from app.domain.models.environment import Environment
-
-from dataclasses import dataclass, field
-
-from app.domain.models.camera import Camera
-from app.domain.models.environment import Environment
 from app.domain.models.frame import Frame
 
 
@@ -29,7 +24,7 @@ class Scene:
 
     environment: Environment
 
-    characters: list[str] = field(default_factory=list)
+    characters: list[Character] = field(default_factory=list)
 
     emotion: str = ""
 

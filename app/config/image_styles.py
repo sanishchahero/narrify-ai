@@ -9,95 +9,21 @@ class ImageStyle(str, Enum):
 
 
 STYLE_PROMPTS = {
-    ImageStyle.HANDWRITTEN: """
-Handwritten notebook illustration.
-
-Black ink sketch.
-
-Minimal watercolor wash.
-
-Vintage cream paper.
-
-Educational illustration.
-
-Simple composition.
-
-Soft shadows.
-
-Consistent art style.
-
-Vertical composition.
-
-Aspect Ratio 9:16.
-
-High quality.
-
-No text.
-
-No watermark.
-
-No logo.
-
-No signature.
-""".strip(),
-
-    ImageStyle.CARTOON: """
-Cute educational cartoon.
-
-Bright colors.
-
-Simple characters.
-
-Modern flat illustration.
-
-Clean background.
-
-Vertical composition.
-
-Aspect Ratio 9:16.
-
-High quality.
-
-No text.
-
-No watermark.
-""".strip(),
-
-    ImageStyle.CHALKBOARD: """
-White chalk drawing.
-
-Dark chalkboard background.
-
-Hand drawn educational diagram.
-
-Clean composition.
-
-Minimal style.
-
-Vertical composition.
-
-Aspect Ratio 9:16.
-
-High quality.
-
-No watermark.
-""".strip(),
-
-    ImageStyle.WATERCOLOR: """
-Beautiful watercolor painting.
-
-Soft colors.
-
-Minimal ink outlines.
-
-Educational illustration.
-
-Vertical composition.
-
-Aspect Ratio 9:16.
-
-High quality.
-
-No watermark.
-""".strip(),
+    ImageStyle.HANDWRITTEN: (
+        "handwritten educational notebook sketch, clean black ink lineart, soft muted watercolor wash, "
+        "vintage aged cream paper texture, minimalist editorial illustration, soft ambient lighting, "
+        "vertical composition, 9:16 aspect ratio, masterpiece, highly detailed"
+    ),
+    ImageStyle.CARTOON: (
+        "clean modern 2d vector cartoon, vibrant color palette, friendly aesthetic, charming character design, "
+        "smooth flat illustration, clean composition, crisp outlines, vertical 9:16 framing, high quality"
+    ),
+    ImageStyle.CHALKBOARD: (
+        "detailed white and colored chalk drawing on dark slate chalkboard, hand-drawn educational diagram, "
+        "textured blackboard background, clean chalk lines, high contrast, vertical 9:16 composition"
+    ),
+    ImageStyle.WATERCOLOR: (
+        "expressive watercolor painting, luminous translucent washes, delicate ink outlines, artistic paper texture, "
+        "soft gradients, harmonious pastel color palette, vertical 9:16 portrait orientation, masterpiece"
+    ),
 }
