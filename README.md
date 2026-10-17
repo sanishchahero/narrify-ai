@@ -1,14 +1,14 @@
 # 📖 Narrify AI
 
-> **Transform long-form books and manuscripts into viral, illustrated vertical videos (9:16) for TikTok, YouTube Shorts, and Instagram Reels.**
+> **Transform any book title or manuscript into viral, illustrated vertical videos (9:16) for TikTok, YouTube Shorts, and Instagram Reels — with zero manual downloads.**
 
-Narrify AI combines cloud LLMs for high-context narrative synthesis with local Stable Diffusion (ComfyUI on Apple Silicon Metal) for zero-cost AI illustration, voiceover narration, kinetic subtitles, and cinematic Ken Burns camera motion.
+Narrify AI combines cloud LLMs for high-context book research and narrative synthesis with local Stable Diffusion (ComfyUI on Apple Silicon Metal) for zero-cost AI illustration, voiceover narration, kinetic subtitles, and cinematic Ken Burns camera motion.
 
 ---
 
 ## ✨ Features
 
-- 🧠 **High-Context Book Digestion**: Parses full-length PDFs using PyMuPDF and synthesizes book concepts via **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) with 128k context support.
+- 💡 **Instant Book-Title Input (Zero Downloads Needed)**: Simply type a book name (e.g. `"The Psychology of Money"`, `"Deep Work"`, `"Atomic Habits"`). Narrify AI automatically synthesizes a rich book knowledge dossier via LLM — or seamlessly uses your local PDF if provided!
 - 🎬 **5-Act Viral Retention Engine**: Generates structured short-form scripts designed for high viewer retention:
   $$\text{Hook} \longrightarrow \text{Conventional Trap} \longrightarrow \text{Breakthrough Insight} \longrightarrow \text{Actionable Protocol} \longrightarrow \text{Triumphant Payoff}$$
 - 🎨 **Local ComfyUI Diffusion (Free & Unlimited)**: Generates high-fidelity 9:16 illustrations using `DreamShaper_8_pruned.safetensors` accelerated locally on Apple Silicon GPU (`mps`) at ~25 seconds per scene.
@@ -23,14 +23,16 @@ Narrify AI combines cloud LLMs for high-context narrative synthesis with local S
 
 ```mermaid
 flowchart LR
-    A["📄 Book PDF"] --> B["📖 PdfBookLoader"]
-    B --> C["🧠 SummaryAgent (LLaMA 3.3 70B)"]
-    C --> D["🎬 ScriptAgent (5-Act Arc)"]
-    D --> E["🎙️ TTSService (.mp3)"]
-    D --> F["🎨 ComfyUI Diffusion (.png)"]
-    D --> G["💬 SubtitleRenderer (PIL)"]
-    E & F & G --> H["🎥 VideoComposer (MoviePy)"]
-    H --> I["📱 Final MP4 (1080x1920)"]
+    A["📖 Book Title or PDF"] --> B["📚 BookLoader"]
+    B -->|Local PDF| C["📖 PdfBookLoader"]
+    B -->|Title Only| D["🌐 Book Research Agent (LLM)"]
+    C & D --> E["🧠 SummaryAgent"]
+    E --> F["🎬 ScriptAgent (5-Act Arc)"]
+    F --> G["🎙️ TTSService (.mp3)"]
+    F --> H["🎨 ComfyUI Diffusion (.png)"]
+    F --> I["💬 SubtitleRenderer (PIL)"]
+    G & H & I --> J["🎥 VideoComposer (MoviePy)"]
+    J --> K["📱 Final MP4 (1080x1920)"]
 ```
 
 ---
@@ -58,7 +60,7 @@ uv sync
 ### 3. Environment Setup
 Copy the example environment file and configure your OpenRouter API key:
 ```bash
-cp .env.example .env  # or edit .env
+cp .env.example .env
 ```
 
 Ensure your `.env` contains:
@@ -85,10 +87,14 @@ python main.py --listen 127.0.0.1 --port 8188
 
 ## 💻 CLI Usage
 
-### 🎥 1. Generate Full Vertical Video (One Command)
-Generates the complete 5-scene vertical video with illustrations, voiceover, subtitles, and motion:
+### 🎥 1. Generate Full Vertical Video
+Simply pass any book title (or a path to a PDF file):
 ```bash
-uv run python main.py video books/atomic_habits.pdf
+# Just write the book title!
+uv run python main.py "The Psychology of Money"
+
+# Or explicitly using the video command:
+uv run python main.py video "Atomic Habits"
 ```
 
 **Options**:
@@ -99,31 +105,26 @@ uv run python main.py video books/atomic_habits.pdf
 - `--limit`: Render only the first $k$ scenes.
 
 ```bash
-# Example: 5 scenes, fresh render with Samantha voice
-uv run python main.py video books/atomic_habits.pdf --scenes 5 --force --voice Samantha
+# Example: Custom style and voice
+uv run python main.py video "Deep Work" --style CARTOON --voice Daniel -n 5
 ```
 
 ### 📝 2. Preview Script & Book Summary
-Preview the generated 5-act narrative script without rendering images or video:
+Preview the generated 5-act narrative script and core lessons without rendering images:
 ```bash
-uv run python main.py summarize books/atomic_habits.pdf --scenes 5
+uv run python main.py summarize "The Psychology of Money"
 ```
 
 ### 🎨 3. Preview Diffusion Prompts
 Inspect the enriched CLIP prompts generated for each scene:
 ```bash
-uv run python main.py blueprint books/atomic_habits.pdf --style HANDWRITTEN
+uv run python main.py blueprint "Thinking, Fast and Slow" --style HANDWRITTEN
 ```
 
 ### 🖼️ 4. Render Illustrations Only
 Generate only scene illustrations directly via ComfyUI:
 ```bash
-uv run python main.py render-images books/atomic_habits.pdf
-```
-
-### 📖 5. Inspect Book Metadata
-```bash
-uv run python main.py load books/atomic_habits.pdf
+uv run python main.py render-images "Atomic Habits"
 ```
 
 ---
@@ -135,7 +136,8 @@ Run the automated test suite with `pytest`:
 uv run pytest
 ```
 
-All 13 unit tests verify:
+All 16 unit tests verify:
+- BookLoader (Direct PDF, local folder fuzzy matching, and zero-download LLM research).
 - OpenRouter LLM structured output and JSON schema adherence.
 - CLIP token length constraints and prompt enhancer cleanliness.
 - 5-scene viral narrative validation and error rejection.

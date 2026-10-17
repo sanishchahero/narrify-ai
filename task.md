@@ -36,14 +36,13 @@ This document outlines the diagnosis of current limitations, architectural bottl
 
 ---
 
-### Phase 2: High-Context Ingestion & Hierarchical Summarization
-- [ ] **Intelligent Document Parsing & Cleaning**:
-  - Filter front-matter (copyright, table of contents, index, references, acknowledgments).
-  - Detect chapters, section titles, and key pull-quotes using PyMuPDF structural metadata.
-- [ ] **Hierarchical "Map-Reduce / Refine" Chunking**:
-  - Process book chapter-by-chapter with sliding window context.
-  - Extract per-chapter key concepts, concrete anecdotes, and visual analogies.
-  - Synthesize a master narrative brief that captures the core transformation arc of the book.
+### Phase 2: High-Context Ingestion & Zero-Download Book Research
+- [x] **Multi-Mode Book Ingestion (`BookLoader`)**:
+  - Accept simple book title input (e.g. `"The Psychology of Money"`, `"Deep Work"`, `"Atomic Habits"`).
+  - Automatically match local PDFs in `books/` by title if available.
+  - Zero-download LLM book research: automatically synthesizes complete in-depth book dossiers (author, core thesis, 5 concepts, real stories, 3 actionable rules) when no local PDF is provided.
+  - Retain direct PDF loading support via `PdfBookLoader`.
+  - Added unit test suite in `tests/test_book_loader.py`.
 - [x] **Cloud Open-Source LLM Integration (OpenRouter)**:
   - Added support for OpenRouter in `Settings` and `LLMService` without needing local Ollama.
   - Defaulted to open-source **`meta-llama/llama-3.3-70b-instruct`** with 128k context window support.

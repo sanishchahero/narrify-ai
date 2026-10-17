@@ -2,15 +2,18 @@
 
 ## 1. System Overview
 
-**Narrify AI** is an automated multimodal generative engine that transforms long-form literature (PDF books and manuscripts) into short-form vertical videos (9:16, 1080×1920) optimized for platforms like YouTube Shorts, Instagram Reels, and TikTok.
+**Narrify AI** is an automated multimodal generative engine that transforms literature and book concepts into short-form vertical videos (9:16, 1080×1920) optimized for platforms like YouTube Shorts, Instagram Reels, and TikTok.
 
-The engine coordinates cloud-based large language models (LLMs) for high-context narrative synthesis with local diffusion models (ComfyUI via Apple Silicon Metal Performance Shaders) for high-fidelity illustration rendering, voice synthesis, kinetic subtitles, and dynamic camera choreography.
+Users can either supply a local PDF or simply input a book title (e.g. `"The Psychology of Money"`, `"Deep Work"`). The system automatically handles book knowledge synthesis via cloud LLMs, illustrates each scene via local Apple Silicon ComfyUI, synchronizes voiceover audio, renders kinetic captions without ImageMagick, and assembles the final cinematic vertical MP4.
 
 ```mermaid
 flowchart TD
-    PDF["📄 Raw Book PDF"] --> Ingest["📖 PdfBookLoader (PyMuPDF)"]
-    Ingest --> TextChunk["✂️ Representative Slicing (100k chars)"]
-    TextChunk --> SummaryAgent["🧠 SummaryAgent (OpenRouter LLaMA 3.3 70B)"]
+    Input["📖 Book Title or PDF Path"] --> Loader["📚 BookLoader"]
+    Loader -->|Local PDF| PDF["📄 PdfBookLoader (PyMuPDF)"]
+    Loader -->|Title Only| Research["🌐 LLM Book Researcher"]
+    
+    PDF & Research --> Book["📦 Book Domain Object"]
+    Book --> SummaryAgent["🧠 SummaryAgent (OpenRouter LLaMA 3.3 70B)"]
     SummaryAgent --> ScriptAgent["🎬 ScriptAgent (5-Act Viral Narrative)"]
     
     subgraph Parallel Multimodal Pipeline
@@ -34,12 +37,17 @@ flowchart TD
 
 ## 2. Architectural Subsystems
 
-### 2.1 PDF Ingestion & Context Management (`app/loaders/pdf_loader.py`)
-* **Library**: `pymupdf` (fitz).
-* **Extraction**: Fast C-based text extraction retaining page counts, title, author, and word counts.
-* **Context Protection**: Standard full-text ingestion easily exceeds LLM context windows or triggers admission timeouts on massive books (e.g. 70,000+ words). The ingestion engine samples a representative tripartite slice of the book:
-  $$\text{Payload} = \text{Preface / Opening } \left(\frac{N}{3}\right) + \text{Core Body } \left(\frac{N}{3}\right) + \text{Conclusion / Lessons } \left(\frac{N}{3}\right)$$
-  capped at 100,000 characters to preserve deep narrative context without payload bloat.
+### 2.1 Multi-Mode Book Ingestion Engine (`app/loaders/book_loader.py` & `pdf_loader.py`)
+Users are not required to manually download PDF files. `BookLoader` provides a 3-tier resolution strategy:
+1. **Direct Path**: If an explicit `.pdf` file path is provided, it is loaded directly via `PdfBookLoader` (C-accelerated PyMuPDF).
+2. **Local Repository Match**: If a book title is provided, `BookLoader` checks `books/` for fuzzy matching PDFs (e.g., `"Atomic Habits"` $\to$ `books/atomic_habits.pdf`).
+3. **Zero-Download LLM Knowledge Research**: If no local PDF exists, `BookLoader` automatically queries the LLM (`meta-llama/llama-3.3-70b-instruct`) to generate a comprehensive, structured book dossier:
+   - Official title and author.
+   - Core thesis and 1-paragraph summary.
+   - 5 fundamental principles and mental models.
+   - Concrete real-life stories and case studies from the book.
+   - 3 actionable step-by-step rules.
+   - Core visual metaphors.
 
 ### 2.2 Cloud LLM Inference Engine (`app/services/llm.py`)
 * **Default Provider**: OpenRouter Cloud API (`meta-llama/llama-3.3-70b-instruct`).
@@ -50,7 +58,7 @@ flowchart TD
   - **Admission Control Retry**: Handles HTTP 429 rate limits with exponential backoff using `Retry-After` headers.
 
 ### 2.3 Viral 5-Act Narrative & Pacing Engine (`app/agents/script_agent.py`)
-To prevent dry, clinical summaries and abrupt endings, `ScriptAgent` enforces a 5-act retention framework:
+To ensure high social media retention, `ScriptAgent` enforces a 5-act storytelling framework:
 
 | Scene | Duration | Dramatic Beat | Functional Purpose |
 | :--- | :--- | :--- | :--- |
@@ -99,44 +107,53 @@ Diffusion models using CLIP ViT-L/14 text encoders possess a 77-token limit and 
 narrify-ai/
 ├── app/
 │   ├── agents/                     # LLM orchestration agents
-│   │   ├── creative_director_agent.py
 │   │   ├── script_agent.py         # 5-act viral narrative engine
-│   │   ├── storyboard_agent.py
 │   │   └── summary_agent.py        # Long-context book summarizer
+│   ├── clients/                    # External service clients
+│   │   └── comfyui_client.py       # ComfyUI WebSocket & REST API client
 │   ├── config/                     # Render and style settings
+│   │   ├── comfy.py
 │   │   ├── image_styles.py
 │   │   └── render.py
 │   ├── core/                       # App settings & environment loaders
-│   │   └── config.py
+│   │   ├── config.py
+│   │   └── logger.py
 │   ├── domain/models/              # Domain dataclasses & Pydantic schemas
 │   │   ├── book.py
+│   │   ├── camera.py
+│   │   ├── character.py
+│   │   ├── environment.py
+│   │   ├── frame.py
 │   │   ├── scene.py
 │   │   ├── script.py
 │   │   ├── script_response.py      # Strict validation schema
-│   │   └── video_blueprint.py
-│   ├── loaders/                    # Document parsing
-│   │   └── pdf_loader.py
+│   │   ├── storyboard.py
+│   │   ├── video_blueprint.py
+│   │   └── visual_context.py
+│   ├── loaders/                    # Document & book ingestion
+│   │   ├── book_loader.py          # Unified title & PDF resolver
+│   │   └── pdf_loader.py           # PyMuPDF parser
 │   ├── prompts/                    # Prompts for LLM agents
 │   │   ├── script_writer.txt
-│   │   ├── summary.txt
-│   │   └── ...
+│   │   └── summary.txt
 │   ├── renderers/                  # ComfyUI interface
 │   │   └── image_renderer.py
 │   ├── services/                   # Core business logic services
 │   │   ├── llm.py                  # OpenRouter & Ollama client
 │   │   ├── prompt_enhancer.py      # CLIP diffusion prompt builder
 │   │   ├── subtitle_renderer.py    # Pillow subtitle pill renderer
+│   │   ├── text_cleaner.py         # Text sanitization
 │   │   ├── tts.py                  # Audio synthesis engine
 │   │   └── video_composer.py       # MoviePy Ken Burns assembly
 │   └── workflows/                  # ComfyUI workflow JSON schemas
-│       ├── dreamshaper.json
-│       └── flux.json
-├── books/                          # Input book PDFs
+│       └── dreamshaper.json
+├── books/                          # Input book PDFs (optional)
 ├── output/                         # Rendered artifacts
 │   ├── audio/                      # Per-scene voice narration MP3s
 │   ├── images/                     # Per-scene rendered PNGs
 │   └── *_video.mp4                 # Exported final vertical videos
 ├── tests/                          # Automated Pytest suite
+│   ├── test_book_loader.py
 │   ├── test_llm_service.py
 │   ├── test_prompt_enhancer.py
 │   ├── test_script_agent.py
@@ -152,9 +169,11 @@ narrify-ai/
 ## 4. CLI Reference
 
 ### `video` (Full End-to-End Pipeline)
-Generates complete vertical video with voice narration, illustrations, subtitles, and motion:
+Generates complete vertical video with voice narration, illustrations, subtitles, and motion from any book name or PDF:
 ```bash
-uv run python main.py video books/atomic_habits.pdf [OPTIONS]
+uv run python main.py video "The Psychology of Money" [OPTIONS]
+# Or simply:
+uv run python main.py "Atomic Habits"
 ```
 **Options**:
 - `--scenes`, `-n`: Number of scenes to generate (default: `5`).
@@ -167,19 +186,19 @@ uv run python main.py video books/atomic_habits.pdf [OPTIONS]
 ### `summarize` (Script Preview)
 Extracts key insights and generates a 5-scene narrative script without triggering image or video rendering:
 ```bash
-uv run python main.py summarize books/atomic_habits.pdf --scenes 5
+uv run python main.py summarize "Deep Work" --scenes 5
 ```
 
 ### `blueprint` (Diffusion Prompt Preview)
 Generates enriched CLIP-compliant diffusion prompts for each scene:
 ```bash
-uv run python main.py blueprint books/atomic_habits.pdf --style HANDWRITTEN
+uv run python main.py blueprint "Thinking, Fast and Slow" --style HANDWRITTEN
 ```
 
 ### `render-images` (ComfyUI Illustration Only)
 Renders illustrations directly via ComfyUI without assembling video:
 ```bash
-uv run python main.py render-images books/atomic_habits.pdf
+uv run python main.py render-images "Atomic Habits"
 ```
 
 ---
@@ -212,7 +231,7 @@ RENDER_FPS=30
 
 ## 6. Testing & Quality Assurance
 
-Narrify AI maintains an automated test suite executed via `pytest`:
+Narrify AI maintains an automated test suite with 16 tests executed via `pytest`:
 
 ```bash
 uv run pytest
@@ -220,7 +239,9 @@ uv run pytest
 
 | Test Suite | Coverage Focus |
 | :--- | :--- |
+| `tests/test_book_loader.py` | Direct PDF parsing, local folder title matching, zero-download LLM research. |
 | `tests/test_llm_service.py` | OpenRouter REST communication, API key validation, markdown stripping. |
 | `tests/test_prompt_enhancer.py` | CLIP token limits, prompt cleanliness, style descriptor injection. |
 | `tests/test_script_agent.py` | 5-scene viral schema validation, rejection of truncated scene arrays. |
 | `tests/test_video_pipeline.py` | Pillow subtitle rendering, TTS synthesis, MoviePy scene assembly. |
+| `tests/test_text_cleaner.py` | Text normalization and character stripping. |

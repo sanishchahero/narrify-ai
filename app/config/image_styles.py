@@ -7,6 +7,14 @@ class ImageStyle(str, Enum):
     CHALKBOARD = "chalkboard"
     WATERCOLOR = "watercolor"
 
+    @classmethod
+    def _missing_(cls, value: object):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value == value.lower():
+                    return member
+        return super()._missing_(value)
+
 
 STYLE_PROMPTS = {
     ImageStyle.HANDWRITTEN: (

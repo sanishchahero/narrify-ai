@@ -1,177 +1,57 @@
+import re
+import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
 
-from app.agents.creative_director_agent import CreativeDirectorAgent
 from app.agents.script_agent import ScriptAgent
-from app.agents.storyboard_agent import StoryboardAgent
 from app.agents.summary_agent import SummaryAgent
 from app.config.image_styles import ImageStyle
-from app.loaders.pdf_loader import PdfBookLoader
+from app.loaders.book_loader import BookLoader
 from app.renderers.image_renderer import ImageRenderer
 from app.services.prompt_enhancer import PromptEnhancer
-from app.services.subtitle_renderer import SubtitleRenderer
 from app.services.tts import TTSService
 from app.services.video_composer import VideoComposer
 
-app = typer.Typer(help="Narrify AI - Turn books into illustrated video scripts and storyboards.")
+app = typer.Typer(
+    help="Narrify AI — Transform books into illustrated viral vertical videos.",
+    no_args_is_help=True,
+)
 
 
-@app.command()
-def load(pdf: Path):
-    """Inspect and extract metadata from a book PDF."""
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-
-    print(f"Title: {book.title}")
-    print(f"Author: {book.author}")
-    print(f"Pages: {book.pages}")
-    print(f"Words: {book.word_count}")
-
-
-@app.command()
-def summarize(
-    pdf: Path,
-    scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes (default 5 for 30-40s short)"),
-):
-    """Summarize a book and produce a preliminary video script."""
-    print(f"📖 Loading PDF from '{pdf}'...")
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-    print(f"✅ Loaded: {book.title} ({book.pages} pages, {book.word_count:,} words)")
-
-    print(f"\n🧠 Sending text to LLM for summary analysis (this may take 30-60s for full books)...")
-    summary = SummaryAgent().summarize(book)
-    print("\n" + "=" * 80)
-    print("📝 BOOK SUMMARY & CORE LESSONS")
-    print("=" * 80)
-    print(summary)
-    print("=" * 80 + "\n")
-
-    print(f"🎬 Crafting {scenes}-scene video script from summary...")
-    script = ScriptAgent().generate(summary, target_scenes=scenes)
-
-    print("\n" + "=" * 80)
-    print(f"🎯 GENERATED VIDEO SCRIPT: {script.title}")
-    print("=" * 80)
-    print(f"🪝 Hook: {script.hook}\n")
-    for scene in script.scenes:
-        print(f"  [Scene {scene.id}] ({scene.duration}s | {scene.emotion}):")
-        print(f"    Narration:   \"{scene.narration}\"")
-        print(f"    Visual Goal: {scene.visual_goal}")
-        print()
-    print("=" * 80)
-
-
-@app.command()
-def blueprint(
-    pdf: Path,
-    style: ImageStyle = ImageStyle.HANDWRITTEN,
-):
-    """Generate a video blueprint with diffusion-ready scene prompts from a book."""
-    print("📖 Loading book...")
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-    print(f"✅ Loaded: {book.title}")
-
-    print("🎬 Generating blueprint...")
-    director = CreativeDirectorAgent()
-    blueprint_data = director.run(book)
-
-    print("\n✨ Generating Enhanced Diffusion Prompts:\n")
-    for scene in blueprint_data.scenes:
-        prompt = PromptEnhancer.enhance(
-            scene,
-            context=blueprint_data.visual_context,
-            style=style,
-        )
-
-        print("=" * 80)
-        print(f"SCENE {scene.id}: {scene.title}")
-        print("=" * 80)
-        print(prompt)
-        print()
-
-
-@app.command()
-def render_images(
-    pdf: Path,
-    limit: Optional[int] = None,
-    style: ImageStyle = ImageStyle.HANDWRITTEN,
-    output: Path = Path("output"),
-):
-    """Generate blueprint and render scene images via ComfyUI."""
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-
-    blueprint_data = CreativeDirectorAgent().run(book)
-
-    print("=" * 80)
-    print(f"Blueprint contains {len(blueprint_data.scenes)} scene(s)")
-    print("=" * 80)
-
-    for scene in blueprint_data.scenes:
-        print(f"Scene {scene.id}: {scene.title}")
-
-    renderer = ImageRenderer()
-    renderer.render(
-        blueprint_data,
-        output,
-        limit=limit,
-        style=style,
-    )
-
-
-@app.command()
-def run(
-    pdf: Path,
-    limit: Optional[int] = None,
-    style: ImageStyle = ImageStyle.HANDWRITTEN,
-    output: Path = Path("output"),
-):
-    """Execute complete storyboard pipeline and render illustrations."""
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-
-    storyboard = StoryboardAgent().run(book)
-
-    print("=" * 80)
-    print(f"Storyboard contains {len(storyboard.scenes)} scene(s)")
-    print("=" * 80)
-
-    renderer = ImageRenderer()
-    renderer.render(
-        storyboard,
-        output,
-        limit=limit,
-        style=style,
-    )
+def _sanitize_title(title: str) -> str:
+    clean = re.sub(r"[^a-zA-Z0-9]+", "_", title.lower().strip())
+    return clean.strip("_") or "book"
 
 
 @app.command()
 def video(
-    pdf: Path,
+    book: str = typer.Argument(
+        ...,
+        help="Book title (e.g. 'Atomic Habits', 'The Psychology of Money') or path to PDF file",
+    ),
     scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes (default 5 for 30-40s short)"),
     limit: Optional[int] = None,
-    style: ImageStyle = ImageStyle.HANDWRITTEN,
+    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
     voice: str = "Samantha",
     output: Path = Path("output"),
     force: bool = typer.Option(False, "--force", "-f", help="Force re-rendering of existing images and audio"),
 ):
     """
-    Generate an end-to-end narrated video:
-    1. Loads book and generates video script.
-    2. Synthesizes voiceover narration with TTS.
-    3. Renders AI scene illustrations via ComfyUI (or uses fallback title cards).
-    4. Assembles final vertical MP4 with subtitles and Ken Burns motion.
+    Generate an end-to-end narrated video from a book name or PDF:
+    1. Loads book (or researches knowledge dossier via LLM).
+    2. Synthesizes a 5-act viral narrative script.
+    3. Synthesizes voiceover narration with TTS.
+    4. Renders AI scene illustrations via ComfyUI.
+    5. Assembles final vertical MP4 with subtitles and Ken Burns motion.
     """
-    loader = PdfBookLoader()
-    book = loader.load(str(pdf))
-    print(f"📖 Loaded '{book.title}' ({book.word_count:,} words)")
+    loader = BookLoader()
+    book_obj = loader.load(book)
+    print(f"📖 Loaded '{book_obj.title}' by {book_obj.author} ({book_obj.word_count:,} words)")
 
     print(f"\n🧠 Generating {scenes}-scene video script via LLM...")
-    summary = SummaryAgent().summarize(book)
+    summary = SummaryAgent().summarize(book_obj)
     script = ScriptAgent().generate(summary, target_scenes=scenes)
 
     script_scenes = script.scenes
@@ -229,7 +109,8 @@ def video(
         })
 
     # 2. Final Video Assembly
-    video_out = output / f"{pdf.stem}_video.mp4"
+    filename = _sanitize_title(book_obj.title)
+    video_out = output / f"{filename}_video.mp4"
     print(f"\n🎥 Assembling final vertical video ({len(scenes_data)} scenes)...")
     composer = VideoComposer()
     composer.compose_video(scenes_data, video_out)
@@ -239,5 +120,111 @@ def video(
     print("=" * 80)
 
 
-if __name__ == "__main__":
+@app.command()
+def summarize(
+    book: str = typer.Argument(
+        ...,
+        help="Book title (e.g. 'Atomic Habits', 'The Psychology of Money') or path to PDF file",
+    ),
+    scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes (default 5 for 30-40s short)"),
+):
+    """Summarize a book and produce a 5-act viral video script preview."""
+    loader = BookLoader()
+    book_obj = loader.load(book)
+    print(f"📖 Loaded: {book_obj.title} by {book_obj.author} ({book_obj.word_count:,} words)")
+
+    print(f"\n🧠 Sending text to LLM for summary analysis...")
+    summary = SummaryAgent().summarize(book_obj)
+    print("\n" + "=" * 80)
+    print("📝 BOOK SUMMARY & CORE LESSONS")
+    print("=" * 80)
+    print(summary)
+    print("=" * 80 + "\n")
+
+    print(f"🎬 Crafting {scenes}-scene video script from summary...")
+    script = ScriptAgent().generate(summary, target_scenes=scenes)
+
+    print("\n" + "=" * 80)
+    print(f"🎯 GENERATED VIDEO SCRIPT: {script.title}")
+    print("=" * 80)
+    print(f"🪝 Hook: {script.hook}\n")
+    for scene in script.scenes:
+        print(f"  [Scene {scene.id}] ({scene.duration}s | {scene.emotion}):")
+        print(f"    Narration:   \"{scene.narration}\"")
+        print(f"    Visual Goal: {scene.visual_goal}")
+        print()
+    print("=" * 80)
+
+
+@app.command()
+def blueprint(
+    book: str = typer.Argument(
+        ...,
+        help="Book title (e.g. 'Atomic Habits', 'The Psychology of Money') or path to PDF file",
+    ),
+    scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes"),
+    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
+):
+    """Generate diffusion-ready scene prompts for a book."""
+    loader = BookLoader()
+    book_obj = loader.load(book)
+    print(f"📖 Loaded: {book_obj.title} by {book_obj.author}")
+
+    summary = SummaryAgent().summarize(book_obj)
+    script = ScriptAgent().generate(summary, target_scenes=scenes)
+
+    print(f"\n✨ Generated Diffusion Prompts for {len(script.scenes)} scene(s):\n")
+    for s in script.scenes:
+        prompt = PromptEnhancer.enhance(s, style=style)
+        print("=" * 80)
+        print(f"SCENE {s.id} ({s.emotion})")
+        print("=" * 80)
+        print(f"Visual Goal: {s.visual_goal}")
+        print(f"Prompt:      {prompt}")
+        print()
+
+
+@app.command()
+def render_images(
+    book: str = typer.Argument(
+        ...,
+        help="Book title (e.g. 'Atomic Habits', 'The Psychology of Money') or path to PDF file",
+    ),
+    scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes"),
+    limit: Optional[int] = None,
+    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
+    output: Path = Path("output"),
+):
+    """Generate script and render scene illustrations via ComfyUI."""
+    loader = BookLoader()
+    book_obj = loader.load(book)
+    print(f"📖 Loaded: {book_obj.title} by {book_obj.author}")
+
+    summary = SummaryAgent().summarize(book_obj)
+    script = ScriptAgent().generate(summary, target_scenes=scenes)
+
+    target_scenes = script.scenes[:limit] if limit else script.scenes
+
+    renderer = ImageRenderer()
+    image_dir = output / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"\n🎨 Rendering {len(target_scenes)} scene illustrations via ComfyUI...")
+    for s in target_scenes:
+        img_file = image_dir / f"scene_{s.id:03}.png"
+        print(f"  [Scene {s.id}] Rendering to {img_file}...")
+        renderer.render_scene_image(scene=s, output_path=img_file, style=style)
+        print(f"  💾 Saved: {img_file}")
+
+
+def main_cli():
+    # If a book title or file is provided as the first argument without a subcommand,
+    # default directly to running 'video'
+    known_commands = {"video", "summarize", "blueprint", "render-images", "--help", "-h"}
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("-") and sys.argv[1] not in known_commands:
+        sys.argv.insert(1, "video")
     app()
+
+
+if __name__ == "__main__":
+    main_cli()
