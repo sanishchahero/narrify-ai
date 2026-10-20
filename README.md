@@ -13,7 +13,8 @@ Narrify AI combines cloud LLMs for high-context book research and narrative synt
   $$\text{Hook} \longrightarrow \text{Conventional Trap} \longrightarrow \text{Breakthrough Insight} \longrightarrow \text{Actionable Protocol} \longrightarrow \text{Triumphant Payoff}$$
 - 🎨 **Local ComfyUI Diffusion (Free & Unlimited)**: Generates high-fidelity 9:16 illustrations using `DreamShaper_8_pruned.safetensors` accelerated locally on Apple Silicon GPU (`mps`) at ~25 seconds per scene.
 - 🎯 **CLIP-Optimized Prompting**: Automatically translates scene descriptions into dense, comma-separated diffusion tokens with prioritized subjects and curated art styles (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
-- 🎙️ **Synchronized Voiceover**: Synthesizes clean audio narration with sub-second timing precision.
+- 🎙️ **Ultra-Realistic Neural Voiceover**: Powered by high-fidelity Microsoft Edge Neural TTS voices (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`) with natural human breathing, cadence, and emotion — zero robotic speech!
+- 🎵 **Ambient Background Music & Audio Ducking**: Automatically mixes and loops warm background music ducked underneath speech for broadcast-ready social media polish.
 - 💬 **Kinetic Subtitles Without ImageMagick**: Generates high-contrast lower-third pill captions using Pillow with zero external dependencies.
 - 🎥 **Cinematic 1080×1920 Export**: Stitches scenes, applies alternating Ken Burns camera zooms, syncs audio, and exports standard H.264/AAC vertical MP4.
 
@@ -99,14 +100,18 @@ uv run python main.py video "Atomic Habits"
 
 **Options**:
 - `--scenes`, `-n`: Number of scenes (default: `5`).
-- `--style`: Illustration aesthetic (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
-- `--voice`: Narrator voice (`Samantha`, `Daniel`, `Karen`).
+- `--style`, `-s`: Illustration aesthetic (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
+- `--voice`, `-v`: Narrator voice (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`, `eric`). Default: `christopher`.
+- `--music`, `-m`: Custom background soundtrack MP3 (defaults to bundled ambient track).
 - `--force`, `-f`: Force re-rendering of existing scene illustrations and audio.
 - `--limit`: Render only the first $k$ scenes.
 
 ```bash
-# Example: Custom style and voice
-uv run python main.py video "Deep Work" --style CARTOON --voice Daniel -n 5
+# Example: High-energy TikTok with Guy voice & Cartoon art
+uv run python main.py video "Deep Work" --style CARTOON --voice guy -n 5
+
+# Example: Warm female narrator with Watercolor art
+uv run python main.py video "The Psychology of Money" --style WATERCOLOR --voice jenny
 ```
 
 ### 📝 2. Preview Script & Book Summary

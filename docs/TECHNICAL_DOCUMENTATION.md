@@ -56,6 +56,7 @@ Users are not required to manually download PDF files. `BookLoader` provides a 3
 * **Resilience Features**:
   - `_clean_json_output`: Strips markdown triple backticks (```json ... ```) automatically.
   - **Admission Control Retry**: Handles HTTP 429 rate limits with exponential backoff using `Retry-After` headers.
+  - **Connection & Read Timeout Resilience**: Automatically intercepts socket timeouts, read timeouts, and transient connection breaks with exponential retry loops to guarantee uninterrupted book research.
 
 ### 2.3 Viral 5-Act Narrative & Pacing Engine (`app/agents/script_agent.py`)
 To ensure high social media retention, `ScriptAgent` enforces a 5-act storytelling framework:
@@ -86,8 +87,14 @@ Diffusion models using CLIP ViT-L/14 text encoders possess a 77-token limit and 
   - Generation Speed: $\sim 1.3\text{ s/it}$ ($\sim 25\text{ seconds}$ per scene on Apple Silicon GPU).
 * **Automated Asset Retrieval**: Communicates via ComfyUI WebSocket/REST endpoints (`/prompt`, `/history`, `/view`) to trigger execution and automatically download generated PNGs to `output/images/scene_XXX.png`.
 
-### 2.6 Audio Narration & Subtitle Engine (`app/services/tts.py` & `subtitle_renderer.py`)
-* **TTS Synthesis**: macOS native speech synthesizer (`say`) encoded via `imageio_ffmpeg` into standard 44.1 kHz stereo MP3 with sub-second speech duration measurement.
+### 2.6 Neural Audio Narration & Subtitle Engine (`app/services/tts.py` & `subtitle_renderer.py`)
+* **Ultra-Realistic Neural TTS**: Uses state-of-the-art neural speech synthesis via `edge-tts` with authentic human breathing, natural intonation, and dynamic cadence:
+  - `christopher` (`en-US-ChristopherNeural`): Deep, authoritative documentary narrator (ideal for non-fiction, business, and philosophy).
+  - `guy` (`en-US-GuyNeural`): Dynamic, passionate storyteller (ideal for viral TikTok/Reels).
+  - `jenny` (`en-US-JennyNeural`): Warm, expressive, natural female voice.
+  - `ryan` (`en-GB-RyanNeural`): Refined British narrative voice.
+  - Automatic fallback to macOS `say` if offline.
+* **Ambient Background Music & Ducking**: Automatically mixes an ambient soundtrack (e.g. `assets/audio/ambient_pad.mp3` or custom `--music`) scaled down to 8% volume (-22 dB ducking) behind narrator speech.
 * **Typography Without ImageMagick**: MoviePy's standard `TextClip` relies on ImageMagick, which is frequently broken or missing on macOS. Narrify AI implements a custom Pillow RGBA subtitle renderer:
   - Generates rounded translucent pill backdrops (`RGBA: 0, 0, 0, 190`).
   - Renders multi-line centered text with drop shadows for 100% legibility across light and dark image backgrounds.

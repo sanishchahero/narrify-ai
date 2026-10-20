@@ -34,7 +34,8 @@ def video(
     scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes (default 5 for 30-40s short)"),
     limit: Optional[int] = None,
     style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
-    voice: str = "Samantha",
+    voice: str = typer.Option("christopher", "--voice", "-v", help="Narrator voice (christopher, guy, jenny, brian, eric, aria, ryan)"),
+    music: Optional[Path] = typer.Option(None, "--music", "-m", help="Custom background soundtrack MP3 (defaults to ambient track)"),
     output: Path = Path("output"),
     force: bool = typer.Option(False, "--force", "-f", help="Force re-rendering of existing images and audio"),
 ):
@@ -113,7 +114,7 @@ def video(
     video_out = output / f"{filename}_video.mp4"
     print(f"\n🎥 Assembling final vertical video ({len(scenes_data)} scenes)...")
     composer = VideoComposer()
-    composer.compose_video(scenes_data, video_out)
+    composer.compose_video(scenes_data, video_out, bg_music_path=music)
 
     print("\n" + "=" * 80)
     print(f"🎉 FINAL VIDEO READY: {video_out}")

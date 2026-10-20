@@ -5,8 +5,10 @@ import imageio_ffmpeg
 import numpy as np
 from moviepy import (
     AudioFileClip,
+    CompositeAudioClip,
     CompositeVideoClip,
     ImageClip,
+    concatenate_audioclips,
     concatenate_videoclips,
 )
 import moviepy.video.fx as vfx
@@ -143,6 +145,8 @@ class VideoComposer:
         self,
         scenes_data: List[dict[str, Any]],
         output_path: Path,
+        bg_music_path: Optional[Path] = None,
+        bg_music_volume: float = 0.08,
     ) -> Path:
         """
         Compiles multiple scene clips into a single .mp4 file.
@@ -175,6 +179,25 @@ class VideoComposer:
         # Concatenate scenes
         final_video = concatenate_videoclips(scene_clips, method="compose")
 
+        # Mix ambient background soundtrack if available
+        music_file = bg_music_path if bg_music_path and Path(bg_music_path).exists() else Path("assets/audio/ambient_pad.mp3")
+        music_clip = None
+        if music_file and music_file.exists():
+            try:
+                raw_music = AudioFileClip(str(music_file))
+                if raw_music.duration < final_video.duration:
+                    n_loops = int(final_video.duration / raw_music.duration) + 1
+                    raw_music = concatenate_audioclips([raw_music] * n_loops)
+                music_clip = raw_music.subclipped(0, final_video.duration).with_volume_scaled(bg_music_volume)
+                if final_video.audio:
+                    mixed_audio = CompositeAudioClip([final_video.audio, music_clip])
+                    final_video = final_video.with_audio(mixed_audio)
+                else:
+                    final_video = final_video.with_audio(music_clip)
+                print(f"🎵 Mixed ambient background music (ducked at {int(bg_music_volume*100)}% volume)")
+            except Exception as e:
+                print(f"⚠️ Could not mix background music: {e}")
+
         print(f"\n🎬 Rendering final video ({final_video.duration:.1f}s) to: {output_path}...")
         final_video.write_videofile(
             str(output_path),
@@ -189,6 +212,8 @@ class VideoComposer:
         # Close clips to free memory
         for c in scene_clips:
             c.close()
+        if music_clip:
+            music_clip.close()
         final_video.close()
 
         print(f"✅ Video successfully created at: {output_path}\n")

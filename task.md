@@ -94,18 +94,21 @@ This document outlines the diagnosis of current limitations, architectural bottl
 ---
 
 ### Phase 6: Full Multimodal Video Assembly (The "Narrify" Engine)
-- [x] **Automated Text-To-Speech (TTS) Integration**:
-  - Built `TTSService` using high-clarity voice narration with FFmpeg audio encoding to `.mp3`.
-  - Configurable narrator voices (`Samantha`, `Daniel`, `Karen`) and speech rates.
-  - Generates synchronized per-scene narration audio in `output/audio/`.
+- [x] **Ultra-Realistic Neural Voiceover (TTS)**:
+  - Upgraded `TTSService` from legacy robotic `say` to state-of-the-art Microsoft Edge Neural TTS models (`edge-tts`).
+  - Added curated storyteller personas: `christopher` (authoritative documentary), `guy` (passionate/viral), `jenny` (warm female), `ryan` (British), `brian` (conversational).
+  - Preserved graceful offline fallback to local speech engines.
+  - Zero API key required, sub-second duration sync.
+- [x] **Ambient Background Music & Audio Ducking**:
+  - Added ambient soundtrack mixing in `VideoComposer` with automatic looping and -22 dB (8% volume) ducking under speech.
+  - Added `--music` / `-m` CLI option for custom background tracks.
 - [x] **Automated Kinetic Subtitles / Captions**:
   - Built `SubtitleRenderer` using Pillow with high-contrast typography, text shadow, and translucent rounded pill backdrop.
   - Automatically wraps narration text to 1-3 lines centered in the lower-third.
 - [x] **Motion & Camera Dynamics (Ken Burns Effects)**:
   - Built `VideoComposer` with alternating subtle zoom-in and zoom-out transitions (`vfx.Resize` + `vfx.Crop`) to keep static illustrations lively and cinematic.
 - [x] **Full Video Assembly & Export**:
-  - Stitches scenes, voiceover audio, subtitles, and Ken Burns motion into vertical MP4 (1080x1920, H.264 / AAC, 30fps).
-  - Added new `video` CLI command in `main.py` for one-command end-to-end video generation.
+  - Stitches scenes, voiceover audio, background music, subtitles, and Ken Burns motion into vertical MP4 (1080x1920, H.264 / AAC, 30fps).
   - Added comprehensive test suite in `tests/test_video_pipeline.py`.
 
 ---

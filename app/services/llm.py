@@ -130,7 +130,19 @@ class LLMService:
                         error_msg += f" - Detail: {err_json['error']}"
                 except Exception:
                     pass
+                if attempt < max_retries - 1:
+                    import time
+                    print(f"⚠️ OpenRouter HTTP error ({err}), retrying in 3s (attempt {attempt+1}/{max_retries})...")
+                    time.sleep(3)
+                    continue
                 raise RuntimeError(error_msg) from err
+            except (requests.RequestException, ConnectionError) as net_err:
+                if attempt < max_retries - 1:
+                    import time
+                    print(f"⚠️ OpenRouter connection error ({net_err}), retrying in 3s (attempt {attempt+1}/{max_retries})...")
+                    time.sleep(3)
+                    continue
+                raise RuntimeError(f"OpenRouter connection failed after {max_retries} attempts: {net_err}") from net_err
         raise RuntimeError("OpenRouter API request failed after retries.")
 
     def _generate_ollama(
