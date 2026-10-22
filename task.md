@@ -65,19 +65,38 @@ This document outlines the diagnosis of current limitations, architectural bottl
 
 ---
 
-### Phase 4: Diffusion Prompt Engineering & Image Quality Overhaul
+### Phase 4: Diffusion Prompt Engineering & Image Quality Overhaul (Anti-AI Engine)
 - [x] **Re-engineer Prompt Synthesizer for CLIP**:
   - Removed all markdown keys, ASCII borders (`===`), narration transcripts, and dialogue from diffusion prompts.
   - Formatted prompts into dense, comma-separated tokens prioritizing Subject & Action in the first 25 tokens.
-  - Integrated style presets (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`) into clean positive descriptors.
-- [x] **Optimized Negative Prompting**:
-  - Cleaned up negative prompt to prevent mutated anatomy, deformed hands, duplicate subjects, and unwanted text/watermarks.
+  - Removed abstract symbolism ("symbolizing...", "representing...", "metaphor for...") to prevent latent space confusion.
+- [x] **Eliminate Plastic "AI-ish" Aesthetics**:
+  - Replaced generic buzzwords (`"masterpiece"`, `"smooth flat illustration"`, `"vibrant vector"`, `"high quality"`) that trigger the infamous corporate flat vector / plastic 3D look.
+  - Added rich physical medium textures: 35mm film grain, Kodak Portra color tones, cold-press watercolor paper tooth, risograph ink misregistration, copperplate cross-hatching, and canvas impasto.
+- [x] **Expanded Curated Artistic Styles**:
+  - `GROWTH_STORY`: Growth Story Studio / Magnates Media aesthetic (bright modern 2D editorial graphic explainer art, royal blue, gold, mint green, and clean uplifting financial/psychological visual metaphors).
+  - `CINEMATIC` (New Default): 35mm film photography, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, natural lighting, candid human expressions.
+  - `GHIBLI`: Hand-painted Studio Ghibli gouache animation cel background, Kazuo Oga scenery, soft pastoral sunlight.
+  - `EDITORIAL`: The New Yorker risograph print, limited palette (terracotta, cobalt, cream), matte paper grain, ligne claire line art.
+  - `VINTAGE_INK`: Albrecht Dürer antique copperplate engraving, fine cross-hatched woodcut etching, aged parchment.
+  - `OIL_PAINTING`: Classical impasto oil on canvas, textured palette knife strokes, Rembrandt chiaroscuro lighting.
+  - `WATERCOLOR`: Translucent wet-on-wet washes on 300gsm cold-press Arches cotton paper with organic blooms.
+  - `HANDWRITTEN`: Hand-drawn pen & ink sketch with delicate cross-hatching and warm sepia wash on ivory cream paper.
+  - `CARTOON`: Whimsical hand-inked storybook cartoon with soft watercolor gouache fills (Calvin & Hobbes aesthetic).
+  - `CHALKBOARD`: Dark slate chalkboard with authentic erased dust texture.
+- [x] **Anti-Creepy Prompt Engineering & Negative Filtering**:
+  - Explicitly banned dark mirrors, hooded figures, grim walls, and murky waters in `script_writer.txt`.
+  - Added anti-horror negative prompt stack (`creepy, eerie, horror, grim, dark, gloomy, shadowy, pale face, scary, disturbing, haunted, ominous, misty, fog, hooded figure, sinister, ghost, morbid`).
+  - Enforced bright, warm, daylight and friendly approachable character postures.
+- [x] **Filesystem Sanitization Robustness**:
+  - Added safe 40-character length capping in `_sanitize_title` to prevent filesystem `File name too long` errors on long book dossiers.
+  - Hardened `BookLoader` title extraction to avoid capturing multi-sentence paragraphs as titles.
 - [x] **Image Download & Dynamic Seed Management**:
   - Vary seed per scene (`config.seed + scene.id`) to avoid cloned compositions.
   - Automatically download and persist image binaries to `output/images/`.
 - [x] **Checkpoint & Resolution Normalization**:
   - Configured `DreamShaper_8_pruned.safetensors` in `dreamshaper.json` and optimized `RenderConfig` for native 512x896 (9:16) rendering on Apple Silicon GPU (Metal Performance Shaders).
-  - Reduced step time to ~1.3 seconds per iteration (~25s per scene render).
+  - Maintained fast generation speed at ~35s per scene on Apple Silicon GPU.
 
 ---
 

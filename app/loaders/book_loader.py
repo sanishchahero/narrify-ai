@@ -73,9 +73,12 @@ class BookLoader:
             if "by " in line.lower():
                 parts = re.split(r"by ", line, flags=re.IGNORECASE)
                 if len(parts) == 2:
-                    title = parts[0].strip().strip("*#\" ")
-                    author = parts[1].strip().strip("*#\" ")
-                    break
+                    candidate_title = parts[0].strip().strip("*#\" ")
+                    candidate_author = parts[1].strip().strip("*#\" ")
+                    if 0 < len(candidate_title) < 60 and 0 < len(candidate_author) < 60:
+                        title = candidate_title
+                        author = candidate_author
+                        break
 
         return Book(
             title=title,

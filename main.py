@@ -22,7 +22,9 @@ app = typer.Typer(
 
 def _sanitize_title(title: str) -> str:
     clean = re.sub(r"[^a-zA-Z0-9]+", "_", title.lower().strip())
-    return clean.strip("_") or "book"
+    clean = clean.strip("_")
+    # Cap to safe 40 chars to prevent filesystem 'File name too long' errors
+    return clean[:40].rstrip("_") or "book"
 
 
 @app.command()
@@ -33,7 +35,7 @@ def video(
     ),
     scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes (default 5 for 30-40s short)"),
     limit: Optional[int] = None,
-    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
+    style: ImageStyle = typer.Option(ImageStyle.CINEMATIC, "--style", "-s", case_sensitive=False, help="Visual illustration style (growth_story, cinematic, ghibli, editorial, vintage_ink, oil_painting, watercolor, handwritten, cartoon, chalkboard)"),
     voice: str = typer.Option("christopher", "--voice", "-v", help="Narrator voice (christopher, guy, jenny, brian, eric, aria, ryan)"),
     music: Optional[Path] = typer.Option(None, "--music", "-m", help="Custom background soundtrack MP3 (defaults to ambient track)"),
     output: Path = Path("output"),
@@ -164,7 +166,7 @@ def blueprint(
         help="Book title (e.g. 'Atomic Habits', 'The Psychology of Money') or path to PDF file",
     ),
     scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes"),
-    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
+    style: ImageStyle = typer.Option(ImageStyle.CINEMATIC, "--style", "-s", case_sensitive=False, help="Visual illustration style (growth_story, cinematic, ghibli, editorial, vintage_ink, oil_painting, watercolor, handwritten, cartoon, chalkboard)"),
 ):
     """Generate diffusion-ready scene prompts for a book."""
     loader = BookLoader()
@@ -193,7 +195,7 @@ def render_images(
     ),
     scenes: int = typer.Option(5, "--scenes", "-n", help="Target number of scenes"),
     limit: Optional[int] = None,
-    style: ImageStyle = typer.Option(ImageStyle.HANDWRITTEN, "--style", "-s", case_sensitive=False, help="Visual illustration style"),
+    style: ImageStyle = typer.Option(ImageStyle.CINEMATIC, "--style", "-s", case_sensitive=False, help="Visual illustration style (growth_story, cinematic, ghibli, editorial, vintage_ink, oil_painting, watercolor, handwritten, cartoon, chalkboard)"),
     output: Path = Path("output"),
 ):
     """Generate script and render scene illustrations via ComfyUI."""

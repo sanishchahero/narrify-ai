@@ -1,3 +1,4 @@
+import re
 from typing import Any, Optional
 
 from app.config.image_styles import ImageStyle, STYLE_PROMPTS
@@ -11,24 +12,42 @@ class PromptEnhancer:
     """
 
     @staticmethod
+    def _clean_text(text: str) -> str:
+        if not text:
+            return ""
+        # Remove markdown or label prefixes
+        t = re.sub(r"^(?:visual prompt|visual goal|description):\s*", "", text, flags=re.IGNORECASE)
+        # Remove abstract symbolism phrases that confuse diffusion models
+        t = re.sub(r"\b(?:symbolizing|representing|signifying|as a symbol of)\s+[^,;.]*", "", t, flags=re.IGNORECASE)
+        # Remove generic fluff words that induce plastic AI looks
+        t = re.sub(r"\b(?:masterpiece|high quality|best quality|ultra detailed|photorealistic)\b", "", t, flags=re.IGNORECASE)
+        # Clean extra commas and whitespace
+        t = re.sub(r",\s*,+", ",", t)
+        return t.strip().strip(",").strip()
+
+    @staticmethod
     def enhance(
         scene: Any,
         context: Optional[Any] = None,
-        style: ImageStyle = ImageStyle.HANDWRITTEN,
+        style: ImageStyle = ImageStyle.CINEMATIC,
     ) -> str:
         prompt_parts: list[str] = []
 
         # 1. Base style keywords
-        base_style = STYLE_PROMPTS.get(style, STYLE_PROMPTS[ImageStyle.HANDWRITTEN])
+        base_style = STYLE_PROMPTS.get(style, STYLE_PROMPTS[ImageStyle.CINEMATIC])
 
         # 2. Extract direct visual_prompt or visual_goal if present
         visual_prompt = getattr(scene, "visual_prompt", None)
         if visual_prompt:
-            prompt_parts.append(str(visual_prompt))
+            cleaned = PromptEnhancer._clean_text(str(visual_prompt))
+            if cleaned:
+                prompt_parts.append(cleaned)
 
         visual_goal = getattr(scene, "visual_goal", None)
         if visual_goal:
-            prompt_parts.append(str(visual_goal))
+            cleaned = PromptEnhancer._clean_text(str(visual_goal))
+            if cleaned:
+                prompt_parts.append(cleaned)
 
         # 3. Extract from frame (Storyboard Scene)
         frame = getattr(scene, "frame", None)

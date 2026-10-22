@@ -15,23 +15,30 @@ CRITICAL NARRATIVE STRUCTURE (Generate EXACTLY 5 Scenes):
 
 - Scene 3: THE BREAKTHROUGH MENTAL MODEL (12–20s)
   * Narration: Introduce the book's core breakthrough concept and mental model clearly in simple, vivid language.
-  * Visual Goal: A powerful VISUAL METAPHOR (e.g. an exponential glowing curve soaring upward, a small brass gear driving a massive clockwork machine, an ice cube melting at 32 degrees, a domino effect). NO abstract blank pages or generic symbols.
+  * Visual Goal: A vivid, tangible PHYSICAL visual (e.g. an artisan placing the final precision brass gear into a master clockwork mechanism, an ice cube melting on dark slate, a single falling wooden domino toppling a giant stone block). NO floating graphs or abstract icons.
 
 - Scene 4: THE ACTIONABLE PROTOCOL (20–28s)
   * Narration: Give the viewer a concrete, practical 1-step rule they can implement immediately (e.g., the 2-minute rule, habit stacking, environment cue).
-  * Visual Goal: A concrete close-up of a person performing the specific micro-action in a warm, inviting setting.
+  * Visual Goal: A concrete close-up of a person performing the specific micro-action in a warm, inviting setting (e.g., placing a fountain pen beside an open journal on an oak desk, putting on running shoes by the front door).
 
 - Scene 5: THE CLIMAX & CALL-TO-ACTION (28–35s)
   * Narration: An inspiring payoff statement summarizing how small steps compound into monumental identity shifts, ending with a memorable closing line.
-  * Visual Goal: An inspiring, triumphant wide-angle shot (e.g., person atop a sunlit peak, standing before an expansive dawn horizon).
+  * Visual Goal: An inspiring, triumphant wide-angle shot (e.g., person atop a sunlit peak, standing before an expansive dawn horizon, walking through an endless golden wheat field).
 
 STRICT RULES:
 1. Generate EXACTLY 5 scenes (id: 1, 2, 3, 4, 5).
 2. Narration length: Exactly 1 to 2 punchy, spoken sentences per scene (15–25 words each). Total video ~30–40 seconds.
 3. Language: Clear, conversational, punchy English (written for the ear, not an essay).
 4. Visual Goal: Provide CONCRETE, PHYSICAL descriptions with distinct subjects, actions, lighting, and composition for an AI diffusion artist.
-   - NEVER use abstract phrases like "concept of gains", "the idea of habits", or "illustration of productivity".
-   - ALWAYS describe tangible objects, people, environments, and lighting (e.g. "A focused young artisan carving wood at a sunlit workbench", "A runner tying laces under a warm streetlamp at twilight").
+   - ABSOLUTE BAN ON AI CLICHÉS & CREEPY / GLOOMY THEMES:
+     * NEVER use split screens, glowing holograms, futuristic floating glass icons, generic suited business figures, or abstract conceptual metaphors like "floating puzzle pieces" or "glowing brains".
+     * NEVER generate creepy, dark, or horror imagery: NO dark mirrors, NO staring into mirrors, NO eerie hooded figures, NO dark foggy abysses, NO haunted shadows, NO murky water.
+     * NEVER write meta-explanations like "symbolizing the struggle" or "representing growth". Only describe what the camera physically sees.
+   - ALWAYS describe BRIGHT, WARM, UPLIFTING, AND INVITING real-world scenes:
+     * Describe bright sunny daylight, warm cozy ambient room light, thriving indoor green plants, clear modern tools, clean desks, and confident, friendly human posture.
+     * E.g. "A cheerful, focused professional sitting at a sunlit wooden desk with a laptop displaying a rising green chart, a warm coffee mug and green houseplant beside them."
+     * E.g. "A runner tying laces under warm morning sunlight on a friendly suburban sidewalk."
+     * E.g. "A creative designer sketching colorful layout ideas with marker pens on a bright white drafting table."
 5. Return ONLY a valid JSON object matching the schema below.
 
 JSON Schema:

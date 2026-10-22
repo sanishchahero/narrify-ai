@@ -11,8 +11,17 @@ Narrify AI combines cloud LLMs for high-context book research and narrative synt
 - 💡 **Instant Book-Title Input (Zero Downloads Needed)**: Simply type a book name (e.g. `"The Psychology of Money"`, `"Deep Work"`, `"Atomic Habits"`). Narrify AI automatically synthesizes a rich book knowledge dossier via LLM — or seamlessly uses your local PDF if provided!
 - 🎬 **5-Act Viral Retention Engine**: Generates structured short-form scripts designed for high viewer retention:
   $$\text{Hook} \longrightarrow \text{Conventional Trap} \longrightarrow \text{Breakthrough Insight} \longrightarrow \text{Actionable Protocol} \longrightarrow \text{Triumphant Payoff}$$
-- 🎨 **Local ComfyUI Diffusion (Free & Unlimited)**: Generates high-fidelity 9:16 illustrations using `DreamShaper_8_pruned.safetensors` accelerated locally on Apple Silicon GPU (`mps`) at ~25 seconds per scene.
-- 🎯 **CLIP-Optimized Prompting**: Automatically translates scene descriptions into dense, comma-separated diffusion tokens with prioritized subjects and curated art styles (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
+- 🎨 **Anti-AI Plastic Illustration Engine**: Replaces generic, artificial corporate vector art with tactile, organic artistic mediums:
+  * **`GROWTH_STORY`**: Growth Story Studio / Magnates Media aesthetic (sleek dark charcoal & slate canvas, radiant gold & emerald green accents, dramatic volumetric spotlight, 2D minimalist financial/psychological visual metaphors).
+  * **`CINEMATIC`** (Default): 35mm film photography, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, natural directional lighting, candid human expressions.
+  * **`GHIBLI`**: Hand-painted Studio Ghibli gouache animation background, Kazuo Oga scenery, soft pastoral sunlight.
+  * **`EDITORIAL`**: The New Yorker risograph print, limited palette (terracotta, cobalt, cream), matte paper grain, ligne claire line art.
+  * **`VINTAGE_INK`**: Albrecht Dürer antique copperplate engraving, fine cross-hatched woodcut etching, aged parchment.
+  * **`OIL_PAINTING`**: Classical impasto oil on canvas, textured palette knife strokes, Rembrandt chiaroscuro lighting.
+  * **`WATERCOLOR`**: Translucent wet-on-wet washes on 300gsm cold-press Arches cotton paper with organic blooms.
+  * **`HANDWRITTEN`**: Hand-drawn pen & ink sketch with delicate cross-hatching and warm sepia wash on ivory cream paper.
+  * **`CARTOON`**: Whimsical hand-inked storybook cartoon with soft watercolor gouache fills (Calvin & Hobbes storybook aesthetic).
+- 🚫 **Aggressive Anti-Artifact Filtering**: Custom negative prompt stack and LLM prompt filtering eliminate waxy plastic skin, 3D CGI sheen, barbie dolls, floating abstract icons, and split-screen clichés.
 - 🎙️ **Ultra-Realistic Neural Voiceover**: Powered by high-fidelity Microsoft Edge Neural TTS voices (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`) with natural human breathing, cadence, and emotion — zero robotic speech!
 - 🎵 **Ambient Background Music & Audio Ducking**: Automatically mixes and loops warm background music ducked underneath speech for broadcast-ready social media polish.
 - 💬 **Kinetic Subtitles Without ImageMagick**: Generates high-contrast lower-third pill captions using Pillow with zero external dependencies.
@@ -100,18 +109,21 @@ uv run python main.py video "Atomic Habits"
 
 **Options**:
 - `--scenes`, `-n`: Number of scenes (default: `5`).
-- `--style`, `-s`: Illustration aesthetic (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
+- `--style`, `-s`: Visual illustration aesthetic (`GROWTH_STORY`, `CINEMATIC`, `GHIBLI`, `EDITORIAL`, `VINTAGE_INK`, `OIL_PAINTING`, `WATERCOLOR`, `HANDWRITTEN`, `CARTOON`, `CHALKBOARD`). Default: `CINEMATIC`.
 - `--voice`, `-v`: Narrator voice (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`, `eric`). Default: `christopher`.
 - `--music`, `-m`: Custom background soundtrack MP3 (defaults to bundled ambient track).
 - `--force`, `-f`: Force re-rendering of existing scene illustrations and audio.
 - `--limit`: Render only the first $k$ scenes.
 
 ```bash
-# Example: High-energy TikTok with Guy voice & Cartoon art
-uv run python main.py video "Deep Work" --style CARTOON --voice guy -n 5
+# Example: 35mm Cinematic film style with Christopher voice
+uv run python main.py video "Deep Work" --style CINEMATIC --voice christopher -n 5
 
-# Example: Warm female narrator with Watercolor art
-uv run python main.py video "The Psychology of Money" --style WATERCOLOR --voice jenny
+# Example: Studio Ghibli painterly aesthetic
+uv run python main.py video "Atomic Habits" --style GHIBLI --voice jenny
+
+# Example: New Yorker editorial risograph illustration
+uv run python main.py video "The Psychology of Money" --style EDITORIAL --voice guy
 ```
 
 ### 📝 2. Preview Script & Book Summary

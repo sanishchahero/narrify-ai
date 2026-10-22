@@ -11,9 +11,13 @@ from app.core.config import get_settings
 from app.services.prompt_enhancer import PromptEnhancer
 
 NEGATIVE_PROMPT = (
-    "text, watermark, logo, signature, speech bubbles, bad anatomy, deformed limbs, "
-    "extra fingers, blurry, low quality, worst quality, duplicate, 3d render, cgi, "
-    "oversaturated, nsfw, distorted geometry"
+    "creepy, eerie, horror, grim, dark, gloomy, shadowy, pale face, scary, disturbing, "
+    "haunted, ominous, misty, fog, hooded figure, sinister, weird expression, staring eyes, ghost, morbid, "
+    "plastic skin, doll, barbie, airbrushed, wax, octane render, 3d render, cgi, unreal engine, "
+    "smooth waxy skin, corporate vector, flat clipart, oversaturated, neon, stock photography, "
+    "bad hands, deformed fingers, extra limbs, mutated anatomy, disfigured face, poorly drawn hands, "
+    "duplicate subjects, blurry, low resolution, bad art, amateur, "
+    "text, watermark, signature, logo, border, frame, collage, split screen, nsfw"
 )
 
 
@@ -34,7 +38,7 @@ class ImageRenderer:
         scene: Any,
         output_path: Path,
         visual_context: Optional[Any] = None,
-        style: ImageStyle = ImageStyle.HANDWRITTEN,
+        style: ImageStyle = ImageStyle.CINEMATIC,
         seed: Optional[int] = None,
     ) -> Path:
         """
@@ -128,7 +132,7 @@ class ImageRenderer:
         storyboard: Any,
         output_dir: Path,
         limit: Optional[int] = None,
-        style: ImageStyle = ImageStyle.HANDWRITTEN,
+        style: ImageStyle = ImageStyle.CINEMATIC,
     ) -> list[Path]:
         """
         Renders all scenes from a Storyboard or VideoBlueprint into output_dir / 'images'.

@@ -116,11 +116,44 @@ def test_prompt_style_switch():
         narration="Focus is your greatest asset.",
         subject="Programmer writing code",
         action="typing on keyboard",
-        background="minimalist office with neon accents",
+        background="minimalist office with warm amber lamp",
     )
 
-    prompt = PromptEnhancer.enhance(scene, style=ImageStyle.CARTOON)
+    # Cartoon style
+    cartoon_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.CARTOON)
+    assert "Programmer writing code" in cartoon_prompt
+    assert "typing on keyboard" in cartoon_prompt
+    assert "charming hand-drawn storybook cartoon illustration" in cartoon_prompt
 
-    assert "Programmer writing code" in prompt
-    assert "typing on keyboard" in prompt
-    assert "clean modern 2d vector cartoon" in prompt
+    # Cinematic style (default)
+    cinematic_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.CINEMATIC)
+    assert "Kodak Portra 400" in cinematic_prompt
+    assert "35mm film still photograph" in cinematic_prompt
+
+    # Ghibli style
+    ghibli_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.GHIBLI)
+    assert "Studio Ghibli" in ghibli_prompt
+
+    # Editorial style
+    editorial_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.EDITORIAL)
+    assert "risograph print texture" in editorial_prompt
+
+    # Growth Story Studio style
+    growth_story_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.GROWTH_STORY)
+    assert "Growth Story Studio aesthetic" in growth_story_prompt
+    assert "bright modern 2d editorial graphic illustration" in growth_story_prompt
+
+
+def test_prompt_cleans_abstract_symbolism():
+    scene = BlueprintScene(
+        id=3,
+        title="Breakthrough",
+        narration="Small actions create big results.",
+        visual_prompt="A brass clock gear turning, symbolizing how focused effort multiplies output, under warm light.",
+        duration=5,
+    )
+
+    prompt = PromptEnhancer.enhance(scene, style=ImageStyle.CINEMATIC)
+    assert "A brass clock gear turning" in prompt
+    assert "symbolizing" not in prompt
+    assert "under warm light" in prompt

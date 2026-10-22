@@ -71,11 +71,22 @@ To ensure high social media retention, `ScriptAgent` enforces a 5-act storytelli
 
 * **Validation**: Validated using Pydantic (`ScriptResponse`) with `min_length=4` scene constraints.
 
-### 2.4 CLIP-Compliant Diffusion Prompt Enhancer (`app/services/prompt_enhancer.py`)
-Diffusion models using CLIP ViT-L/14 text encoders possess a 77-token limit and fail when presented with markdown headers, formatting lines, or negative words in positive prompts.
+### 2.4 Tactile Diffusion Prompt Enhancer & Anti-AI Engine (`app/services/prompt_enhancer.py`)
+Diffusion models using CLIP ViT-L/14 text encoders produce plastic, synthetic artifacts when prompted with buzzwords (`"masterpiece"`, `"smooth flat illustration"`, `"vibrant vector"`) or abstract symbolism (`"symbolizing triumph"`). Narrify AI implements a multi-stage prompt synthesis engine:
 * **Token Prioritization**: Direct physical subject + primary action placed within the first 25 tokens.
-* **Style Preset Descriptors**: Injects dense artistic descriptors based on `ImageStyle` (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
-* **Negative Prompting**: Dedicated negative token list removing extra limbs, distorted anatomy, signatures, watermarks, and deformed faces.
+* **Abstract Symbolism Sanitization**: Automatically strips conceptual phrases (e.g. `symbolizing ...`, `metaphor of ...`) and fluff words so diffusion text encoders receive pure physical nouns, materials, and lighting descriptors.
+* **Expanded Artistic Styles**:
+  - `GROWTH_STORY`: Growth Story Studio / Magnates Media aesthetic (bright modern 2D editorial graphic explainer art, royal blue, gold, mint green, and clean uplifting financial/psychological visual metaphors).
+  - `CINEMATIC` (Default): 35mm film photography, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, natural lighting, candid human expressions.
+  - `GHIBLI`: Hand-painted Studio Ghibli gouache animation cel background, Kazuo Oga scenery, soft pastoral sunlight.
+  - `EDITORIAL`: The New Yorker risograph print, limited palette (terracotta, cobalt, cream), matte paper grain, ligne claire line art.
+  - `VINTAGE_INK`: Albrecht Dürer antique copperplate engraving, fine cross-hatched woodcut etching, aged parchment.
+  - `OIL_PAINTING`: Classical impasto oil on canvas, textured palette knife strokes, Rembrandt chiaroscuro lighting.
+  - `WATERCOLOR`: Translucent wet-on-wet washes on 300gsm cold-press Arches cotton paper with organic blooms.
+  - `HANDWRITTEN`: Hand-drawn pen & ink sketch with delicate cross-hatching and warm sepia wash on ivory cream paper.
+  - `CARTOON`: Whimsical hand-inked storybook cartoon with soft watercolor gouache fills (Calvin & Hobbes aesthetic).
+  - `CHALKBOARD`: Dark slate chalkboard with authentic erased dust texture.
+* **Anti-Creepy & Anti-Artifact Negative Prompting**: Aggressively eliminates horror tropes (creepy faces, dark mirrors, hooded figures, grim abysses, murky waters, shadowy fog), waxy plastic skin, 3D CGI sheen, barbie dolls, airbrushing, stock photography, oversaturation, floating abstract icons, and split-screen clichés.
 
 ### 2.5 Local GPU Image Generation (`app/renderers/image_renderer.py`)
 * **Server**: Local ComfyUI daemon running on `http://127.0.0.1:8188`.
@@ -184,8 +195,8 @@ uv run python main.py "Atomic Habits"
 ```
 **Options**:
 - `--scenes`, `-n`: Number of scenes to generate (default: `5`).
-- `--voice`: Narrator voice (`Samantha`, `Daniel`, `Karen`).
-- `--style`: Artistic illustration style (`HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`).
+- `--voice`: Narrator voice (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`, `eric`). Default: `christopher`.
+- `--style`: Artistic illustration style (`GROWTH_STORY`, `CINEMATIC`, `GHIBLI`, `EDITORIAL`, `VINTAGE_INK`, `OIL_PAINTING`, `WATERCOLOR`, `HANDWRITTEN`, `CARTOON`, `CHALKBOARD`). Default: `CINEMATIC`.
 - `--force`, `-f`: Force re-rendering of existing scene images and audio.
 - `--limit`: Render only the first $k$ scenes.
 - `--output`: Custom output directory (default: `output/`).
