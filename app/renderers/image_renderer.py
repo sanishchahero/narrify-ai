@@ -20,6 +20,14 @@ NEGATIVE_PROMPT = (
     "text, watermark, signature, logo, border, frame, collage, split screen, nsfw"
 )
 
+GROWTH_STORY_NEGATIVE_PROMPT = (
+    "creepy, eerie, horror, grim, dark horror, ghostly, pale face, scary, disturbing, "
+    "haunted, ominous, misty, fog, hooded figure, sinister, weird expression, staring eyes, ghost, morbid, "
+    "photograph, realistic human face, portrait, cluttered background, room interior, scenic landscape, "
+    "messy, classical painting, impasto, sketch, grunge, grainy, blurry, bad anatomy, "
+    "extra limbs, deformed, watermark, signature, amateur, low resolution"
+)
+
 
 class ImageRenderer:
 
@@ -59,7 +67,7 @@ class ImageRenderer:
         if self.image_provider == "cloud":
             return self._render_cloud(prompt, output_path, effective_seed)
         else:
-            return self._render_comfyui(prompt, output_path, effective_seed)
+            return self._render_comfyui(prompt, output_path, effective_seed, style=style)
 
     def _render_cloud(
         self,
@@ -98,6 +106,7 @@ class ImageRenderer:
         prompt: str,
         output_path: Path,
         seed: int,
+        style: ImageStyle = ImageStyle.CINEMATIC,
     ) -> Path:
         """Generates image using local ComfyUI instance."""
         if not self.comfy_client or not self.comfy_client.is_connected():
@@ -106,10 +115,16 @@ class ImageRenderer:
                 "Set IMAGE_PROVIDER=cloud in .env to use cloud FLUX without running ComfyUI."
             )
 
+        neg = (
+            GROWTH_STORY_NEGATIVE_PROMPT
+            if style == ImageStyle.GROWTH_STORY
+            else NEGATIVE_PROMPT
+        )
+
         image_name = output_path.stem
         images = self.comfy_client.generate(
             prompt=prompt,
-            negative_prompt=NEGATIVE_PROMPT,
+            negative_prompt=neg,
             output_name=image_name,
             config=self.config,
             seed=seed,

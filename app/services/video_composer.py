@@ -14,6 +14,8 @@ from moviepy import (
 import moviepy.video.fx as vfx
 from PIL import Image, ImageDraw, ImageFont
 
+from app.config.image_styles import ImageStyle
+from app.services.infographic_composer import InfographicComposer
 from app.services.subtitle_renderer import SubtitleRenderer
 
 
@@ -31,6 +33,7 @@ class VideoComposer:
         self.target_width, self.target_height = target_size
         self.fps = fps
         self.subtitle_renderer = SubtitleRenderer()
+        self.infographic_composer = InfographicComposer(target_size=target_size)
         self.ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
 
     def _prepare_scene_image(
@@ -38,11 +41,25 @@ class VideoComposer:
         image_path: Optional[Path],
         scene_title: str,
         scene_id: int,
+        narration: str = "",
+        visual_goal: str = "",
+        style: ImageStyle = ImageStyle.CINEMATIC,
+        book_title: str = "THE PSYCHOLOGY OF MONEY",
     ) -> np.ndarray:
         """
-        Loads and fits the scene image to 1080x1920, or creates an aesthetic
-        placeholder card if the image has not been rendered yet.
+        Loads and fits the scene image to 1080x1920, or creates a structured
+        Growth Story Studio motion graphic slide, or aesthetic placeholder card.
         """
+        if style == ImageStyle.GROWTH_STORY:
+            slide = self.infographic_composer.render_scene_slide(
+                scene_id=scene_id,
+                narration=narration,
+                visual_goal=visual_goal,
+                book_title=book_title,
+                hero_image_path=image_path,
+            )
+            return np.array(slide.convert("RGB"))
+
         if image_path and Path(image_path).exists():
             img = Image.open(image_path).convert("RGB")
             # Calculate aspect fill
@@ -147,6 +164,8 @@ class VideoComposer:
         output_path: Path,
         bg_music_path: Optional[Path] = None,
         bg_music_volume: float = 0.08,
+        style: ImageStyle = ImageStyle.CINEMATIC,
+        book_title: str = "THE PSYCHOLOGY OF MONEY",
     ) -> Path:
         """
         Compiles multiple scene clips into a single .mp4 file.
@@ -166,6 +185,10 @@ class VideoComposer:
                 image_path=s.get("image_path"),
                 scene_title=s.get("title", f"Scene {idx+1}"),
                 scene_id=s.get("id", idx + 1),
+                narration=s.get("narration", ""),
+                visual_goal=s.get("visual_goal", ""),
+                style=style,
+                book_title=book_title,
             )
             clip = self.create_scene_clip(
                 image_np=img_np,

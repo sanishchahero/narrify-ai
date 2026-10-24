@@ -1,10 +1,21 @@
-# Narrify AI — Technical Architecture & System Documentation
+# Narrify AI — Technical Specification & Architecture
 
-## 1. System Overview
+## Executive Summary
 
-**Narrify AI** is an automated multimodal generative engine that transforms literature and book concepts into short-form vertical videos (9:16, 1080×1920) optimized for platforms like YouTube Shorts, Instagram Reels, and TikTok.
+**Narrify AI** is an automated, multimodal generative pipeline that turns literature into short-form vertical videos (9:16, 1080×1920) optimized for YouTube Shorts, Instagram Reels, and TikTok.
 
-Users can either supply a local PDF or simply input a book title (e.g. `"The Psychology of Money"`, `"Deep Work"`). The system automatically handles book knowledge synthesis via cloud LLMs, illustrates each scene via local Apple Silicon ComfyUI, synchronizes voiceover audio, renders kinetic captions without ImageMagick, and assembles the final cinematic vertical MP4.
+Users can either provide an existing PDF path or simply **type any book title directly** (e.g. `"The Psychology of Money"`, `"Deep Work"`). The system automatically researches and synthesizes book dossiers via cloud LLMs without requiring manual PDF downloading.
+
+The engine coordinates:
+1. **Multi-Mode Book Ingestion** (`BookLoader`): Direct PDF parsing, local folder fuzzy matching, or zero-download LLM book research.
+2. **Cloud LLMs** (OpenRouter `meta-llama/llama-3.3-70b-instruct`) for high-context book research and 5-act viral narrative structuring.
+3. **Local Diffusion Models** (ComfyUI with `DreamShaper_8` on Apple Silicon Metal Performance Shaders) for high-aesthetic scene illustrations without cloud subscription fees.
+4. **Ultra-Realistic Neural Audio & Subtitles** (`TTSService` using Microsoft Edge Neural TTS voices with human breathing, cadence, and ambient background music ducking).
+5. **Cinematic Video Composer** (MoviePy with alternating Ken Burns camera zooms, audio sync, and 1080×1920 H.264 export).
+
+---
+
+## 1. System Architecture
 
 ```mermaid
 flowchart TD
@@ -17,7 +28,7 @@ flowchart TD
     SummaryAgent --> ScriptAgent["🎬 ScriptAgent (5-Act Viral Narrative)"]
     
     subgraph Parallel Multimodal Pipeline
-        ScriptAgent --> TTSService["🎙️ TTSService (Speech Narration & Timing)"]
+        ScriptAgent --> TTSService["🎙️ TTSService (Neural Speech & Timing)"]
         ScriptAgent --> PromptEnhancer["🎨 PromptEnhancer (CLIP-Optimized Tokens)"]
         PromptEnhancer --> ComfyUI["⚡ Local ComfyUI (DreamShaper 8 on Metal MPS)"]
     end
@@ -35,231 +46,71 @@ flowchart TD
 
 ---
 
-## 2. Architectural Subsystems
+## 2. Core Subsystems
 
-### 2.1 Multi-Mode Book Ingestion Engine (`app/loaders/book_loader.py` & `pdf_loader.py`)
-Users are not required to manually download PDF files. `BookLoader` provides a 3-tier resolution strategy:
-1. **Direct Path**: If an explicit `.pdf` file path is provided, it is loaded directly via `PdfBookLoader` (C-accelerated PyMuPDF).
-2. **Local Repository Match**: If a book title is provided, `BookLoader` checks `books/` for fuzzy matching PDFs (e.g., `"Atomic Habits"` $\to$ `books/atomic_habits.pdf`).
-3. **Zero-Download LLM Knowledge Research**: If no local PDF exists, `BookLoader` automatically queries the LLM (`meta-llama/llama-3.3-70b-instruct`) to generate a comprehensive, structured book dossier:
-   - Official title and author.
-   - Core thesis and 1-paragraph summary.
-   - 5 fundamental principles and mental models.
-   - Concrete real-life stories and case studies from the book.
-   - 3 actionable step-by-step rules.
-   - Core visual metaphors.
+### 2.1 Multi-Mode Book Ingestion Engine (`BookLoader`)
+- **Direct PDF Path**: When given a path like `books/atomic_habits.pdf`, uses C-accelerated `PdfBookLoader` (PyMuPDF).
+- **Fuzzy Local Search**: When given `"Atomic Habits"`, searches `books/` for fuzzy matching filenames.
+- **Zero-Download LLM Research**: When no local PDF exists (e.g. `"The Psychology of Money"`), queries the cloud LLM to synthesize an in-depth book dossier (exact author, core thesis, 5 concepts, real stories, 3 actionable rules, and visual metaphors).
 
-### 2.2 Cloud LLM Inference Engine (`app/services/llm.py`)
-* **Default Provider**: OpenRouter Cloud API (`meta-llama/llama-3.3-70b-instruct`).
-* **Fallback Provider**: Local Ollama instance.
-* **Structured Output**: Enforces strict JSON schemas using response formatting.
-* **Resilience Features**:
-  - `_clean_json_output`: Strips markdown triple backticks (```json ... ```) automatically.
-  - **Admission Control Retry**: Handles HTTP 429 rate limits with exponential backoff using `Retry-After` headers.
-  - **Connection & Read Timeout Resilience**: Automatically intercepts socket timeouts, read timeouts, and transient connection breaks with exponential retry loops to guarantee uninterrupted book research.
+### 2.2 Viral 5-Act Narrative & Pacing Engine (`ScriptAgent`)
+Enforces a 5-act retention framework:
+1. **Scene 1 (The Hook, 0–4s)**: Counter-intuitive question or pattern interrupt stopping the user's scroll.
+2. **Scene 2 (The Conventional Trap, 4–8s)**: Highlights why common efforts fail and the frustration of being stuck.
+3. **Scene 3 (The Breakthrough Mechanism, 8–15s)**: Introduces the core mental model paired with a concrete, physical visual metaphor.
+4. **Scene 4 (The Actionable Protocol, 15–22s)**: Practical micro-habit rule (e.g. 2-minute rule, habit stacking).
+5. **Scene 5 (Triumphant Payoff, 22–30s)**: Inspiring transformation arc with a memorable call-to-action.
 
-### 2.3 Viral 5-Act Narrative & Pacing Engine (`app/agents/script_agent.py`)
-To ensure high social media retention, `ScriptAgent` enforces a 5-act storytelling framework:
+### 2.3 CLIP-Compliant Diffusion Prompt Enhancer (`PromptEnhancer`)
+- Eliminates all markdown headers, ASCII borders, and dialogues.
+- Places subject and primary action in the first 25 tokens for CLIP compliance.
+- Applies negative token constraints to prevent distorted anatomy, duplicate subjects, and unwanted text/watermarks.
+- Injects curated style descriptors (`GROWTH_STORY`, `HANDWRITTEN`, `CARTOON`, `CHALKBOARD`, `WATERCOLOR`, `CINEMATIC`, `EDITORIAL`, `GHIBLI`).
+- Features dedicated isolated 3D isometric business & fintech prompts for `ImageStyle.GROWTH_STORY` with style-aware negative prompts (avoiding penalty on 3D/vectors while strictly suppressing uncanny faces and gloomy scenic interiors).
 
-| Scene | Duration | Dramatic Beat | Functional Purpose |
-| :--- | :--- | :--- | :--- |
-| **Scene 1** | 3–6s | **The Hook** | Counter-intuitive question or pattern interrupt stopping the user's scroll. |
-| **Scene 2** | 4–6s | **The Conventional Trap** | Highlights why common advice fails and the pain of being stuck. |
-| **Scene 3** | 6–8s | **The Breakthrough Insight** | Introduces the core mental model paired with a vivid physical visual metaphor. |
-| **Scene 4** | 5–7s | **The Actionable Protocol** | Gives a concrete micro-habit rule (e.g., 2-minute rule, habit stacking). |
-| **Scene 5** | 5–6s | **Triumphant Payoff** | Inspiring transformation arc with a memorable call-to-action. |
+### 2.4 Local ComfyUI Execution Loop (`ImageRenderer`)
+- Native $512 \times 896$ (9:16 vertical aspect ratio).
+- Checkpoint: `DreamShaper_8_pruned.safetensors` on Apple Silicon Metal (`mps`).
+- Generation speed: $\sim 1.3\text{ s/it}$ ($\sim 25\text{ seconds}$ per scene render).
+- Automatic download: Fetches rendered images via ComfyUI `/view` endpoint directly into `output/images/scene_XXX.png`.
 
-* **Validation**: Validated using Pydantic (`ScriptResponse`) with `min_length=4` scene constraints.
-
-### 2.4 Tactile Diffusion Prompt Enhancer & Anti-AI Engine (`app/services/prompt_enhancer.py`)
-Diffusion models using CLIP ViT-L/14 text encoders produce plastic, synthetic artifacts when prompted with buzzwords (`"masterpiece"`, `"smooth flat illustration"`, `"vibrant vector"`) or abstract symbolism (`"symbolizing triumph"`). Narrify AI implements a multi-stage prompt synthesis engine:
-* **Token Prioritization**: Direct physical subject + primary action placed within the first 25 tokens.
-* **Abstract Symbolism Sanitization**: Automatically strips conceptual phrases (e.g. `symbolizing ...`, `metaphor of ...`) and fluff words so diffusion text encoders receive pure physical nouns, materials, and lighting descriptors.
-* **Expanded Artistic Styles**:
-  - `GROWTH_STORY`: Growth Story Studio / Magnates Media aesthetic (bright modern 2D editorial graphic explainer art, royal blue, gold, mint green, and clean uplifting financial/psychological visual metaphors).
-  - `CINEMATIC` (Default): 35mm film photography, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, natural lighting, candid human expressions.
-  - `GHIBLI`: Hand-painted Studio Ghibli gouache animation cel background, Kazuo Oga scenery, soft pastoral sunlight.
-  - `EDITORIAL`: The New Yorker risograph print, limited palette (terracotta, cobalt, cream), matte paper grain, ligne claire line art.
-  - `VINTAGE_INK`: Albrecht Dürer antique copperplate engraving, fine cross-hatched woodcut etching, aged parchment.
-  - `OIL_PAINTING`: Classical impasto oil on canvas, textured palette knife strokes, Rembrandt chiaroscuro lighting.
-  - `WATERCOLOR`: Translucent wet-on-wet washes on 300gsm cold-press Arches cotton paper with organic blooms.
-  - `HANDWRITTEN`: Hand-drawn pen & ink sketch with delicate cross-hatching and warm sepia wash on ivory cream paper.
-  - `CARTOON`: Whimsical hand-inked storybook cartoon with soft watercolor gouache fills (Calvin & Hobbes aesthetic).
-  - `CHALKBOARD`: Dark slate chalkboard with authentic erased dust texture.
-* **Anti-Creepy & Anti-Artifact Negative Prompting**: Aggressively eliminates horror tropes (creepy faces, dark mirrors, hooded figures, grim abysses, murky waters, shadowy fog), waxy plastic skin, 3D CGI sheen, barbie dolls, airbrushing, stock photography, oversaturation, floating abstract icons, and split-screen clichés.
-
-### 2.5 Local GPU Image Generation (`app/renderers/image_renderer.py`)
-* **Server**: Local ComfyUI daemon running on `http://127.0.0.1:8188`.
-* **Hardware Acceleration**: Apple Silicon Metal Performance Shaders (`mps`) with unified memory management.
-* **Model Workflow**: `DreamShaper_8_pruned.safetensors` (SD 1.5 optimized checkpoint) configured in `app/workflows/dreamshaper.json`.
-* **Rendering Metrics**:
-  - Resolution: Native $512 \times 896$ (9:16 vertical aspect ratio).
-  - Sampler: DPM++ 2M Karras, 20 steps, CFG scale 7.0.
-  - Generation Speed: $\sim 1.3\text{ s/it}$ ($\sim 25\text{ seconds}$ per scene on Apple Silicon GPU).
-* **Automated Asset Retrieval**: Communicates via ComfyUI WebSocket/REST endpoints (`/prompt`, `/history`, `/view`) to trigger execution and automatically download generated PNGs to `output/images/scene_XXX.png`.
-
-### 2.6 Neural Audio Narration & Subtitle Engine (`app/services/tts.py` & `subtitle_renderer.py`)
-* **Ultra-Realistic Neural TTS**: Uses state-of-the-art neural speech synthesis via `edge-tts` with authentic human breathing, natural intonation, and dynamic cadence:
+### 2.5 Neural Audio Narration & Subtitle Engine (`TTSService`)
+- **Ultra-Realistic Neural TTS**: Uses state-of-the-art neural speech synthesis via `edge-tts` with authentic human breathing, natural intonation, and dynamic cadence:
   - `christopher` (`en-US-ChristopherNeural`): Deep, authoritative documentary narrator (ideal for non-fiction, business, and philosophy).
   - `guy` (`en-US-GuyNeural`): Dynamic, passionate storyteller (ideal for viral TikTok/Reels).
   - `jenny` (`en-US-JennyNeural`): Warm, expressive, natural female voice.
   - `ryan` (`en-GB-RyanNeural`): Refined British narrative voice.
   - Automatic fallback to macOS `say` if offline.
-* **Ambient Background Music & Ducking**: Automatically mixes an ambient soundtrack (e.g. `assets/audio/ambient_pad.mp3` or custom `--music`) scaled down to 8% volume (-22 dB ducking) behind narrator speech.
-* **Typography Without ImageMagick**: MoviePy's standard `TextClip` relies on ImageMagick, which is frequently broken or missing on macOS. Narrify AI implements a custom Pillow RGBA subtitle renderer:
-  - Generates rounded translucent pill backdrops (`RGBA: 0, 0, 0, 190`).
-  - Renders multi-line centered text with drop shadows for 100% legibility across light and dark image backgrounds.
-  - Positions subtitles dynamically in the lower third ($y = 78\%$).
+- **Ambient Background Music & Ducking**: Automatically mixes an ambient soundtrack (`assets/audio/ambient_pad.mp3` or custom `--music`) scaled down to 8% volume (-22 dB ducking) behind narrator speech.
+- **Typography Without ImageMagick**: Custom Pillow RGBA renderer that draws rounded dark translucent pill backdrops (`RGBA: 0, 0, 0, 190`) and multi-line centered text with drop shadows in the lower-third ($y = 78\%$).
 
-### 2.7 Video Composition & Ken Burns Choreography (`app/services/video_composer.py`)
-* **Aspect Ratio**: Full HD $1080 \times 1920$ vertical canvas.
-* **Smart Cropping**: Scales and center-crops 9:16 source images to exactly 1080×1920 without stretching or black bars.
-* **Dynamic Motion**: Alternates subtle Ken Burns zoom-in ($1.0 \to 1.04$) and zoom-out ($1.04 \to 1.0$) using `vfx.Resize` and `vfx.Crop` to transform static illustrations into cinematic video.
-* **Export**: Fast H.264 video encoding (`yuv420p` pixel format) and AAC audio encoding at 30 fps.
+### 2.6 Cinematic Video Assembly & Infographic Composer
+- **Infographic Motion Graphics Composer (`InfographicComposer`)**: Renders native 1080×1920 Growth Story Studio motion graphic slides featuring dark slate canvases, radial glows, top category pills, side-by-side comparison cards (The Illusion [Red] vs The Reality [Green]), compounding curves, and document highlighter callouts.
+- **Dynamic Ken Burns Motion**: Alternating Ken Burns zoom-in ($1.0 \to 1.04$) and zoom-out ($1.04 \to 1.0$) transforms static slides and illustrations into lively cinematic video.
+- Full HD $1080 \times 1920$ vertical canvas with aspect-preserving center crop.
+- Fast H.264 (`yuv420p`) and AAC stereo audio export at 30 fps.
 
 ---
 
-## 3. Directory Layout
+## 3. CLI Command Suite
 
-```
-narrify-ai/
-├── app/
-│   ├── agents/                     # LLM orchestration agents
-│   │   ├── script_agent.py         # 5-act viral narrative engine
-│   │   └── summary_agent.py        # Long-context book summarizer
-│   ├── clients/                    # External service clients
-│   │   └── comfyui_client.py       # ComfyUI WebSocket & REST API client
-│   ├── config/                     # Render and style settings
-│   │   ├── comfy.py
-│   │   ├── image_styles.py
-│   │   └── render.py
-│   ├── core/                       # App settings & environment loaders
-│   │   ├── config.py
-│   │   └── logger.py
-│   ├── domain/models/              # Domain dataclasses & Pydantic schemas
-│   │   ├── book.py
-│   │   ├── camera.py
-│   │   ├── character.py
-│   │   ├── environment.py
-│   │   ├── frame.py
-│   │   ├── scene.py
-│   │   ├── script.py
-│   │   ├── script_response.py      # Strict validation schema
-│   │   ├── storyboard.py
-│   │   ├── video_blueprint.py
-│   │   └── visual_context.py
-│   ├── loaders/                    # Document & book ingestion
-│   │   ├── book_loader.py          # Unified title & PDF resolver
-│   │   └── pdf_loader.py           # PyMuPDF parser
-│   ├── prompts/                    # Prompts for LLM agents
-│   │   ├── script_writer.txt
-│   │   └── summary.txt
-│   ├── renderers/                  # ComfyUI interface
-│   │   └── image_renderer.py
-│   ├── services/                   # Core business logic services
-│   │   ├── llm.py                  # OpenRouter & Ollama client
-│   │   ├── prompt_enhancer.py      # CLIP diffusion prompt builder
-│   │   ├── subtitle_renderer.py    # Pillow subtitle pill renderer
-│   │   ├── text_cleaner.py         # Text sanitization
-│   │   ├── tts.py                  # Audio synthesis engine
-│   │   └── video_composer.py       # MoviePy Ken Burns assembly
-│   └── workflows/                  # ComfyUI workflow JSON schemas
-│       └── dreamshaper.json
-├── books/                          # Input book PDFs (optional)
-├── output/                         # Rendered artifacts
-│   ├── audio/                      # Per-scene voice narration MP3s
-│   ├── images/                     # Per-scene rendered PNGs
-│   └── *_video.mp4                 # Exported final vertical videos
-├── tests/                          # Automated Pytest suite
-│   ├── test_book_loader.py
-│   ├── test_llm_service.py
-│   ├── test_prompt_enhancer.py
-│   ├── test_script_agent.py
-│   ├── test_text_cleaner.py
-│   └── test_video_pipeline.py
-├── main.py                         # Typer CLI application entry point
-├── pyproject.toml                  # UV project configuration
-└── task.md                         # Active development roadmap & backlog
-```
+| Command | Usage | Description |
+| :--- | :--- | :--- |
+| **`video`** | `uv run python main.py video "The Psychology of Money" [-n 5] [-v christopher] [--style growth_story] [-f]` | Generates the complete vertical video with Growth Story Studio motion graphic slides, neural voice, subtitles, and motion. |
+| **Default** | `uv run python main.py "Atomic Habits"` | Direct shorthand for the `video` command. |
+| **`summarize`** | `uv run python main.py summarize "Deep Work" [-n 5]` | Generates the 5-act narrative script and book summary without video rendering. |
+| **`blueprint`** | `uv run python main.py blueprint "Thinking, Fast and Slow"` | Enriches scenes with CLIP diffusion prompts. |
+| **`render-images`** | `uv run python main.py render-images "Atomic Habits"` | Renders illustrations directly via ComfyUI. |
 
 ---
 
-## 4. CLI Reference
+## 4. Test Suite Summary
 
-### `video` (Full End-to-End Pipeline)
-Generates complete vertical video with voice narration, illustrations, subtitles, and motion from any book name or PDF:
-```bash
-uv run python main.py video "The Psychology of Money" [OPTIONS]
-# Or simply:
-uv run python main.py "Atomic Habits"
-```
-**Options**:
-- `--scenes`, `-n`: Number of scenes to generate (default: `5`).
-- `--voice`: Narrator voice (`christopher`, `guy`, `jenny`, `brian`, `ryan`, `aria`, `eric`). Default: `christopher`.
-- `--style`: Artistic illustration style (`GROWTH_STORY`, `CINEMATIC`, `GHIBLI`, `EDITORIAL`, `VINTAGE_INK`, `OIL_PAINTING`, `WATERCOLOR`, `HANDWRITTEN`, `CARTOON`, `CHALKBOARD`). Default: `CINEMATIC`.
-- `--force`, `-f`: Force re-rendering of existing scene images and audio.
-- `--limit`: Render only the first $k$ scenes.
-- `--output`: Custom output directory (default: `output/`).
-
-### `summarize` (Script Preview)
-Extracts key insights and generates a 5-scene narrative script without triggering image or video rendering:
-```bash
-uv run python main.py summarize "Deep Work" --scenes 5
-```
-
-### `blueprint` (Diffusion Prompt Preview)
-Generates enriched CLIP-compliant diffusion prompts for each scene:
-```bash
-uv run python main.py blueprint "Thinking, Fast and Slow" --style HANDWRITTEN
-```
-
-### `render-images` (ComfyUI Illustration Only)
-Renders illustrations directly via ComfyUI without assembling video:
-```bash
-uv run python main.py render-images "Atomic Habits"
-```
-
----
-
-## 5. Environment & Configuration Reference
-
-Configured via `.env`:
-
-```ini
-# LLM Provider Configuration
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxx
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-LLM_MODEL=meta-llama/llama-3.3-70b-instruct
-LLM_TEMPERATURE=0.7
-
-# Local ComfyUI Configuration
-IMAGE_PROVIDER=comfyui
-IMAGE_MODEL=flux
-COMFYUI_HOST=127.0.0.1
-COMFYUI_PORT=8188
-
-# Video Render Parameters
-RENDER_WIDTH=1080
-RENDER_HEIGHT=1920
-RENDER_FPS=30
-```
-
----
-
-## 6. Testing & Quality Assurance
-
-Narrify AI maintains an automated test suite with 16 tests executed via `pytest`:
-
-```bash
-uv run pytest
-```
-
-| Test Suite | Coverage Focus |
-| :--- | :--- |
-| `tests/test_book_loader.py` | Direct PDF parsing, local folder title matching, zero-download LLM research. |
-| `tests/test_llm_service.py` | OpenRouter REST communication, API key validation, markdown stripping. |
-| `tests/test_prompt_enhancer.py` | CLIP token limits, prompt cleanliness, style descriptor injection. |
-| `tests/test_script_agent.py` | 5-scene viral schema validation, rejection of truncated scene arrays. |
-| `tests/test_video_pipeline.py` | Pillow subtitle rendering, TTS synthesis, MoviePy scene assembly. |
-| `tests/test_text_cleaner.py` | Text normalization and character stripping. |
+Narrify AI features 18 automated unit tests executed via `pytest`:
+* `tests/test_book_loader.py`: Direct PDF, local folder title match, zero-download LLM research.
+* `tests/test_llm_service.py`: OpenRouter REST calls, API key validation, markdown stripping.
+* `tests/test_prompt_enhancer.py`: CLIP compliance, prompt token boundaries, style descriptors.
+* `tests/test_script_agent.py`: 5-scene viral schema validation, rejection of truncated scripts.
+* `tests/test_video_pipeline.py`: Pillow subtitle overlay generation, TTS synthesis, MoviePy scene assembly.
+* `tests/test_infographic_composer.py`: 5-act Growth Story Studio motion graphic slide rendering.
+* `tests/test_text_cleaner.py`: Text normalization and sanitization.

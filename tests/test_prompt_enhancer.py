@@ -141,7 +141,7 @@ def test_prompt_style_switch():
     # Growth Story Studio style
     growth_story_prompt = PromptEnhancer.enhance(scene, style=ImageStyle.GROWTH_STORY)
     assert "Growth Story Studio aesthetic" in growth_story_prompt
-    assert "bright modern 2d editorial graphic illustration" in growth_story_prompt
+    assert "isolated modern 3D isometric business infographic asset" in growth_story_prompt
 
 
 def test_prompt_cleans_abstract_symbolism():

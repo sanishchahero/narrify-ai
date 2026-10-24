@@ -106,6 +106,7 @@ def video(
             "id": s.id,
             "title": f"Scene {s.id}",
             "narration": s.narration,
+            "visual_goal": getattr(s, "visual_goal", ""),
             "image_path": img_file if img_file and img_file.exists() else None,
             "audio_path": audio_path,
             "duration": max(duration + 0.4, 2.5),
@@ -116,7 +117,13 @@ def video(
     video_out = output / f"{filename}_video.mp4"
     print(f"\n🎥 Assembling final vertical video ({len(scenes_data)} scenes)...")
     composer = VideoComposer()
-    composer.compose_video(scenes_data, video_out, bg_music_path=music)
+    composer.compose_video(
+        scenes_data,
+        video_out,
+        bg_music_path=music,
+        style=style,
+        book_title=book_obj.title,
+    )
 
     print("\n" + "=" * 80)
     print(f"🎉 FINAL VIDEO READY: {video_out}")

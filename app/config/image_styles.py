@@ -25,10 +25,10 @@ class ImageStyle(str, Enum):
 
 STYLE_PROMPTS = {
     ImageStyle.GROWTH_STORY: (
-        "Growth Story Studio aesthetic, bright modern 2d editorial graphic illustration, "
-        "clean crisp vector outlines, vibrant color palette with royal blue, warm gold, fresh emerald green and white, "
-        "friendly and inspiring business storytelling, clear financial and psychological visual metaphor, "
-        "modern digital explainer art, vertical 9:16"
+        "Growth Story Studio aesthetic, isolated modern 3D isometric business infographic asset, "
+        "sleek claymorphic and glassmorphic render, centered on a clean solid dark slate background #0B0F19, "
+        "crisp sharp edges, high contrast emerald green and warm gold accents, "
+        "professional fintech explainer visual, zero background clutter, minimalist modern motion graphic slide, vertical 9:16"
     ),
     ImageStyle.CINEMATIC: (
         "candid 35mm film still photograph, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, "

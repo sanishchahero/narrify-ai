@@ -12,7 +12,7 @@ Narrify AI combines cloud LLMs for high-context book research and narrative synt
 - 🎬 **5-Act Viral Retention Engine**: Generates structured short-form scripts designed for high viewer retention:
   $$\text{Hook} \longrightarrow \text{Conventional Trap} \longrightarrow \text{Breakthrough Insight} \longrightarrow \text{Actionable Protocol} \longrightarrow \text{Triumphant Payoff}$$
 - 🎨 **Anti-AI Plastic Illustration Engine**: Replaces generic, artificial corporate vector art with tactile, organic artistic mediums:
-  * **`GROWTH_STORY`**: Growth Story Studio / Magnates Media aesthetic (sleek dark charcoal & slate canvas, radiant gold & emerald green accents, dramatic volumetric spotlight, 2D minimalist financial/psychological visual metaphors).
+  * **`GROWTH_STORY`**: Growth Story Studio motion graphics aesthetic (isolated 3D isometric fintech icons, dark slate stage #0B0F19, split comparison cards [The Illusion vs The Reality], compounding curves, and translucent yellow highlighter callouts).
   * **`CINEMATIC`** (Default): 35mm film photography, Kodak Portra 400 grain, Leica 50mm f/1.4 lens, natural directional lighting, candid human expressions.
   * **`GHIBLI`**: Hand-painted Studio Ghibli gouache animation background, Kazuo Oga scenery, soft pastoral sunlight.
   * **`EDITORIAL`**: The New Yorker risograph print, limited palette (terracotta, cobalt, cream), matte paper grain, ligne claire line art.
@@ -153,18 +153,21 @@ Run the automated test suite with `pytest`:
 uv run pytest
 ```
 
-All 16 unit tests verify:
+All 18 unit tests verify:
 - BookLoader (Direct PDF, local folder fuzzy matching, and zero-download LLM research).
 - OpenRouter LLM structured output and JSON schema adherence.
 - CLIP token length constraints and prompt enhancer cleanliness.
 - 5-scene viral narrative validation and error rejection.
 - Pillow subtitle rendering and MoviePy video assembly.
+- InfographicComposer 5-act Growth Story Studio motion graphic slide rendering.
 
 ---
 
 ## 📚 Technical Documentation
 
-For an in-depth dive into the internal subsystems, pipeline mechanics, and performance benchmarks, see [docs/TECHNICAL_DOCUMENTATION.md](docs/TECHNICAL_DOCUMENTATION.md).
+For an in-depth dive into the internal subsystems, pipeline mechanics, and performance benchmarks:
+- [Technical Specification & Architecture](docs/TECHNICAL_DOCUMENTATION.md)
+- [Growth Story Studio Graphics Architecture](docs/GROWTH_STORY_GRAPHICS_ARCHITECTURE.md)
 
 ---
 

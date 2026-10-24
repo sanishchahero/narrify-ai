@@ -23,6 +23,7 @@ ComfyUI/
 output/
 books/
 app/generated/
+scratch/
 
 # IDE & OS
 .idea/
